@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mus-pro",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+  "vars": {
+    // Orígenes desde los que la web puede llamar a la API.
+    "ORIGENES": "https://caarlosverde.github.io,http://localhost:5173,http://127.0.0.1:5173"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mus-pro",
+      // Se rellena con el id real al crear la base de datos en Cloudflare (wrangler d1 create mus-pro).
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migraciones"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "MESAS", "class_name": "Mesa" },
+      { "name": "VESTIBULO", "class_name": "Vestibulo" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Mesa", "Vestibulo"] }]
+}
