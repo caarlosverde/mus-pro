@@ -32,3 +32,33 @@
   color: var(--muted);
   font-size: 0.92rem;
 }
+
+.baraja {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.baraja__palo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.baraja__palo h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.baraja__cartas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.baraja__cartas .carta {
+  width: 58px;
+}

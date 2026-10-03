@@ -78,11 +78,6 @@
 
   .asiento .mano .carta--peque {
     width: 30px;
-    height: 44px;
-  }
-
-  .asiento .mano .carta--peque .carta__centro svg {
-    width: 14px;
-    height: 14px;
+    border-radius: 4px;
   }
 }

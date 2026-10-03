@@ -1,4 +1,6 @@
+import { Carta } from '../componentes/Carta'
 import { Panel, Segmentado } from '../componentes/ui'
+import { NUMEROS, PALOS, crearCarta } from '../engine/cartas'
 import { SENAS, type Sena } from '../engine/informacion'
 import { useAjustes } from '../estado/ajustes'
 import { GLOSARIO } from '../datos/glosario'
@@ -79,6 +81,26 @@ export function ReglasPagina() {
           </ul>
         </Panel>
       </div>
+
+      <Panel titulo="La baraja española">
+        <p className="texto-suave">
+          Cuarenta cartas en cuatro palos. Fíjate en el filete del marco: los cortes ("pintas") dicen el palo aunque sólo
+          asome el borde. Oros no tiene cortes, copas uno, espadas dos y bastos tres.
+          {reglas.reyes === 8 && ' Con 8 reyes, los treses valen como reyes y los doses como ases.'}
+        </p>
+        <div className="baraja">
+          {PALOS.map((palo) => (
+            <div key={palo} className="baraja__palo">
+              <h3>{palo[0].toUpperCase() + palo.slice(1)}</h3>
+              <div className="baraja__cartas">
+                {NUMEROS.map((n) => (
+                  <Carta key={n} carta={crearCarta(n, palo)} tamano="peque" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
 
       <Panel titulo="Señas habituales">
         <p className="texto-suave">Varían según la zona: pactadlas antes de jugar. Pasar una seña falsa no está permitido.</p>

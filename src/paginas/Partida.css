@@ -156,35 +156,77 @@
 }
 
 .plaza__jugada {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.85);
-  max-width: 200px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.88);
+  max-width: 220px;
+  line-height: 1.3;
 }
 
-.plaza__notas {
+.plaza__jugada--mia {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  max-width: 280px;
+}
+
+.plaza__etiqueta {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+/* Fila fija para el bocadillo: las cartas no saltan cuando alguien habla. */
+.plaza__dice {
+  min-height: 26px;
+  display: flex;
+  align-items: flex-end;
   justify-content: center;
-  gap: 4px;
-  min-height: 22px;
-  max-width: 240px;
 }
 
 .bocadillo {
+  position: relative;
   background: #fff;
   color: #1d2420;
   font-weight: 700;
-  font-size: 0.8rem;
-  padding: 2px 9px;
+  font-size: 0.82rem;
+  padding: 3px 11px;
   border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+}
+
+.bocadillo::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom: none;
+  border-top-color: #fff;
 }
 
 .nota-sena {
-  font-size: 0.72rem;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
+  max-width: 240px;
+  line-height: 1.3;
 }
 
 .mesa-partida__centro {
@@ -235,13 +277,8 @@
   }
 
   .plaza:not(.plaza--abajo) .mano .carta--peque {
-    width: 28px;
-    height: 42px;
-  }
-
-  .plaza:not(.plaza--abajo) .mano .carta--peque .carta__centro svg {
-    width: 13px;
-    height: 13px;
+    width: 30px;
+    border-radius: 4px;
   }
 }
 

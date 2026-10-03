@@ -265,6 +265,7 @@ function MesaVisual({ partida, per }: { partida: EstadoPartida; per: Record<Asie
     const ultima = ultimaAccion(e, pos)
     const sus = senas.filter((s) => s.de === pos)
     const visible = a === HEROE || fin
+    const senasTexto = (lista: typeof senas) => lista.map((s) => SENAS[s.sena].nombre.toLowerCase()).join(', ')
     return (
       <div className={`plaza plaza--${lugar} ${turno ? 'plaza--turno' : ''} ${a % 2 === 0 ? 'plaza--nuestra' : 'plaza--suya'}`}>
         <div className="plaza__nombre">
@@ -274,21 +275,31 @@ function MesaVisual({ partida, per }: { partida: EstadoPartida; per: Record<Asie
             {a !== HEROE && ` · ${per[a].nombre}`}
           </span>
         </div>
+        {/* Lo último que ha dicho, como un bocadillo encima de sus cartas. */}
+        <div className="plaza__dice" aria-live="polite">
+          {ultima && <span className="bocadillo">{ultima}</span>}
+        </div>
         <div className="mano">
           {e.manos[pos].map((c, i) => (visible ? <Carta key={c} carta={c} tamano={a === HEROE ? 'normal' : 'peque'} /> : <CartaOculta key={i} tamano="peque" />))}
         </div>
-        {fin && a !== HEROE && <div className="plaza__jugada">{describirJugada(e.jugadas[pos])}</div>}
-        <div className="plaza__notas">
-          {ultima && <span className="bocadillo">{ultima}</span>}
-          {sus.map((s) => (
-            <span key={s.sena} className="nota-sena">
-              {a === 2 ? 'Te pasa' : 'Le pillas'}: {SENAS[s.sena].nombre.toLowerCase()}
-            </span>
-          ))}
-          {a === HEROE && misSenas.length > 0 && !fin && (
-            <span className="nota-sena">Pasas: {misSenas.map((s) => SENAS[s.sena].nombre.toLowerCase()).join(', ')}</span>
-          )}
-        </div>
+        {(a === HEROE || fin) && (
+          <div className={`plaza__jugada ${a === HEROE ? 'plaza__jugada--mia' : ''}`}>
+            {a === HEROE && <span className="plaza__etiqueta">Tu jugada</span>}
+            {describirJugada(e.jugadas[pos])}
+          </div>
+        )}
+        {a === HEROE && misSenas.length > 0 && !fin && (
+          <div className="nota-sena">
+            <span className="plaza__etiqueta">Seña a tu compañero</span>
+            {senasTexto(misSenas)}
+          </div>
+        )}
+        {a !== HEROE && sus.length > 0 && (
+          <div className="nota-sena">
+            <span className="plaza__etiqueta">{a === 2 ? 'Te pasa' : 'Le pillas'}</span>
+            {senasTexto(sus)}
+          </div>
+        )}
       </div>
     )
   }
