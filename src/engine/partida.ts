@@ -34,6 +34,7 @@ export const equipoDe = (a: Asiento): Equipo => (a % 2) as Equipo
 
 export interface EstadoPartida {
   reglas: Reglas
+  /** Configuración de señas por asiento (no por posición: la mano rota). */
   config: ConfigMano
   /** Asiento que es mano en la mano actual. */
   asientoMano: Asiento
@@ -57,6 +58,12 @@ export function posicionDe(p: EstadoPartida, a: Asiento): Posicion {
   return ((a - p.asientoMano + 4) % 4) as Posicion
 }
 
+/** Pasa la configuración por asiento a la de la mano actual (por posición). */
+function configMano(config: ConfigMano, asientoMano: Asiento): ConfigMano {
+  const probSenas = [0, 1, 2, 3].map((pos) => config.probSenas[(asientoMano + pos) % 4]) as ConfigMano['probSenas']
+  return { ...config, probSenas }
+}
+
 function marcadorMano(tantos: [number, number], asientoMano: Asiento) {
   const eqMano = equipoDe(asientoMano)
   return { mano: tantos[eqMano], postre: tantos[1 - eqMano] }
@@ -70,7 +77,7 @@ export function nuevaPartida(reglas: Reglas, config: ConfigMano, rng: Rng, asien
     asientoMano,
     tantos,
     juegos: [0, 0],
-    mano: nuevaMano(reglas, marcadorMano(tantos, asientoMano), rng, config),
+    mano: nuevaMano(reglas, marcadorMano(tantos, asientoMano), rng, configMano(config, asientoMano)),
     manosJugadas: 0,
     ganadorVaca: null,
     ultimoJuego: null,
@@ -107,6 +114,6 @@ export function siguienteMano(p: EstadoPartida, rng: Rng): EstadoPartida {
     manosJugadas,
     ultimoJuego,
     ganadorVaca,
-    mano: nuevaMano(p.reglas, marcadorMano(tantos, asientoMano), rng, p.config),
+    mano: nuevaMano(p.reglas, marcadorMano(tantos, asientoMano), rng, configMano(p.config, asientoMano)),
   }
 }

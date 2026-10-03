@@ -1,0 +1,368 @@
+.personalidades {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.personalidad {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.personalidad span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.personalidad--activa {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+
+.partida__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.partida__controles {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.marcador-partida {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 14px;
+  box-shadow: var(--shadow);
+}
+
+.marcador-partida > div:not(.marcador-partida__sep) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.marcador-partida span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.marcador-partida strong {
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.marcador-partida > div:first-child strong {
+  color: var(--nosotros);
+}
+
+.marcador-partida > div:last-child strong {
+  color: var(--ellos);
+}
+
+.marcador-partida small {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.marcador-partida__sep {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.mesa-partida {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 1fr) 1fr;
+  grid-template-areas:
+    '. arriba .'
+    'izquierda centro derecha'
+    '. abajo .';
+  gap: 10px;
+  align-items: center;
+  justify-items: center;
+}
+
+.plaza {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 8px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  min-width: 0;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.plaza--arriba { grid-area: arriba; }
+.plaza--izquierda { grid-area: izquierda; }
+.plaza--derecha { grid-area: derecha; }
+.plaza--abajo { grid-area: abajo; }
+
+.plaza--turno {
+  border-color: #f3c24a;
+  background: rgba(243, 194, 74, 0.12);
+}
+
+.plaza__nombre {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.plaza__nombre strong {
+  font-size: 0.9rem;
+}
+
+.plaza--nuestra .plaza__nombre strong {
+  color: #9be2b8;
+}
+
+.plaza--suya .plaza__nombre strong {
+  color: #ffc49b;
+}
+
+.plaza .mano {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.plaza__jugada {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 200px;
+}
+
+.plaza__notas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  min-height: 22px;
+  max-width: 240px;
+}
+
+.bocadillo {
+  background: #fff;
+  color: #1d2420;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+
+.nota-sena {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.mesa-partida__centro {
+  grid-area: centro;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 60px;
+  justify-content: center;
+}
+
+.lance-actual {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.bote {
+  background: rgba(0, 0, 0, 0.3);
+  color: #f3c24a;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.partida__inferior {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .partida__inferior {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mesa-partida {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'arriba arriba'
+      'izquierda derecha'
+      'centro centro'
+      'abajo abajo';
+  }
+
+  .plaza:not(.plaza--abajo) .mano .carta--peque {
+    width: 28px;
+    height: 42px;
+  }
+
+  .plaza:not(.plaza--abajo) .mano .carta--peque .carta__centro svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.envite-libre {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.boton--ordago {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.descarte {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.seleccionable {
+  display: inline-block;
+  transition: transform 0.12s ease;
+}
+
+.seleccionable--activa {
+  transform: translateY(-10px);
+  opacity: 0.6;
+}
+
+.registro {
+  margin: 0;
+  padding-left: 20px;
+  max-height: 260px;
+  overflow-y: auto;
+  font-size: 0.88rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fin-mano {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recuento li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.recuento--nos {
+  background: var(--ok-soft);
+}
+
+.recuento--ellos {
+  background: var(--danger-soft);
+}
+
+.revision {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.decision {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface-2);
+}
+
+.decision__cabecera {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.decision__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.opcion-evaluada {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.opcion-evaluada:first-child {
+  border-color: var(--ok);
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.opcion-evaluada--mia {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}

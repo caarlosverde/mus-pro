@@ -9,9 +9,15 @@ import './Inicio.css'
 
 const MODULOS = [
   {
-    ruta: 'laboratorio',
-    titulo: 'Laboratorio',
-    texto: 'Tu mano, tu posición, las señas que has visto y con cuántas cartas se quedó cada uno. Te dice qué probabilidades tienes en cada lance y qué llevan los demás.',
+    ruta: 'jugar',
+    titulo: 'Jugar contra bots',
+    texto: 'Vaca completa contra el bravo, el conservador, el farolero... Al acabar cada mano, revisa tus decisiones con su probabilidad de ganar.',
+    listo: true,
+  },
+  {
+    ruta: 'corte',
+    titulo: 'Entrenador de corte',
+    texto: '¿Mus o no hay mus? Situaciones sin fin según posición, marcador y señas, evaluadas jugando la mano cientos de veces.',
     listo: true,
   },
   {
@@ -20,10 +26,14 @@ const MODULOS = [
     texto: 'Situaciones de "estar dentro": órdagos, orden de cobro, el envite justo. Cada solución está calculada, no opinada.',
     listo: true,
   },
-  { titulo: 'Entrenador de corte', texto: '¿Mus o no hay mus? Según posición, marcador, descartes y señas.', listo: false },
-  { titulo: 'Entrenador de envites', texto: 'Juega la mano lance a lance y recibe la evaluación de cada decisión.', listo: false },
-  { titulo: 'Bots con carácter', texto: 'El bravo, el conservador, el que se viene abajo... aprende a explotar cada estilo.', listo: false },
+  {
+    ruta: 'laboratorio',
+    titulo: 'Laboratorio',
+    texto: 'Tu mano, tu posición, las señas que has visto y con cuántas cartas se quedó cada uno: probabilidades de cada lance y qué llevan los demás.',
+    listo: true,
+  },
   { titulo: 'Lectura del rival', texto: 'Qué manos le quedan posibles a un rival según lo que ha hecho y dicho.', listo: false },
+  { titulo: 'Análisis de partidas', texto: 'Estadísticas de tus partidas: dónde ganas y dónde se te escapan las piedras.', listo: false },
 ]
 
 /** Un consejo distinto cada día (se fija al cargar la app). */
@@ -43,11 +53,11 @@ export function Inicio() {
             órdago y qué lleva el de enfrente.
           </p>
           <div className="portada__acciones">
-            <a className="boton boton--primario" href="#/laboratorio">
-              Abrir el laboratorio
+            <a className="boton boton--primario" href="#/jugar">
+              Jugar una partida
             </a>
-            <a className="boton boton--claro" href="#/problemas">
-              Resolver problemas
+            <a className="boton boton--claro" href="#/corte">
+              Entrenar el corte
             </a>
           </div>
         </div>

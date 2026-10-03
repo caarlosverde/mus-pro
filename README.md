@@ -6,6 +6,8 @@ Aplicación web (instalable en el móvil) para **mejorar en el mus a nivel avanz
 
 | Módulo | Qué hace |
 | --- | --- |
+| **Jugar contra bots** | Vaca completa contra bots con personalidad (equilibrado, bravo, conservador, farolero, mandíbula de cristal), con señas que el compañero te pasa y que a veces pillas a los rivales. Al acabar cada mano, **revisión de tus decisiones**: probabilidad de ganar el juego con cada alternativa. |
+| **Entrenador de corte** | Situaciones ilimitadas de "¿mus o no hay mus?" con posición, marcador y señas. Cada respuesta se evalúa jugando la mano cientos de veces con cada opción. |
 | **Laboratorio** | Metes tu mano, tu posición, las señas que has visto, las declaraciones de pares/juego y con cuántas cartas se quedó cada uno. Simula 20.000 repartos compatibles y te da: probabilidad de ganar cada lance, qué llevan rivales y compañero, el mejor juego rival, el valor de tus cartas si todo queda en paso y una lectura rápida en lenguaje natural. |
 | **Problemas de final** | Situaciones de "estar dentro" (orden de cobro, órdagos, el envite justo). Tras responder, ves la probabilidad de ganar el juego con cada opción, calculada en directo. |
 | **Reglas** | Variante configurable (8/4 reyes, juegos a 30/40, con o sin la Real), resumen, señas y glosario. |
@@ -17,7 +19,9 @@ Aplicación web (instalable en el móvil) para **mejorar en el mus a nivel avanz
 - **Modelo de descarte**: "se quedó con N cartas" se interpreta suponiendo que se guardan reyes y cartas emparejadas. Es un modelo de comportamiento, no una certeza.
 - **Recuento fiel**: los "porque no" se cobran en el momento; el resto en orden (grandes, chicas, pares, juego/punto) y el juego termina en cuanto alguien llega.
 - **Problemas verificados**: un test comprueba que la respuesta marcada como correcta es la que más probabilidad de ganar da.
-- El análisis corre en un **Web Worker** para no bloquear la interfaz.
+- **Bots con personalidad**: cada decisión es una distribución de probabilidad (corte, envite, respuesta) a partir de tablas de fuerza por lance, las señas del compañero y el marcador. Los órdagos se valoran en probabilidad de ganar el juego. El bot equilibrado gana ~58% de las vacas al bravo.
+- **Evaluación de decisiones por simulación (rollouts)**: se generan repartos compatibles con lo que sabías, se ponderan por la verosimilitud de lo que hicieron los rivales (inferencia bayesiana con las propias políticas de los bots) y se juega la mano hasta el final con cada alternativa, con números aleatorios comunes.
+- Los cálculos pesados corren en **Web Workers** para no bloquear la interfaz.
 
 ## Desarrollo
 
@@ -43,7 +47,6 @@ src/
 
 ## Próximos pasos
 
-1. Entrenador de corte (¿mus o no hay mus?) con evaluación por simulación.
-2. Entrenador de envites lance a lance.
-3. Bots con personalidad (bravo, conservador, el que se viene abajo…) y partida completa.
-4. Lectura del rival (rangos de manos según sus acciones) y análisis de tus partidas.
+1. Lectura del rival: rangos de manos según sus acciones (la inferencia ya existe en el evaluador).
+2. Análisis de tus partidas: estadísticas de decisiones a lo largo del tiempo.
+3. Más problemas de final y descartes evaluados.

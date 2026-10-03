@@ -166,3 +166,17 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+
+.marcas-corte {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.claves {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

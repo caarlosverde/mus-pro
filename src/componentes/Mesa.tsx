@@ -8,17 +8,19 @@ interface Props {
   heroe: Posicion
   jugadores: readonly InfoJugador[]
   centro?: ReactNode
+  /** Notas adicionales por jugador (lo que ha dicho, señas vistas...). */
+  notas?: Partial<Record<Posicion, string[]>>
 }
 
 /** Mesa vista desde el héroe: tú abajo, tu compañero enfrente y los rivales a los lados. */
-export function Mesa({ heroe, jugadores, centro }: Props) {
+export function Mesa({ heroe, jugadores, centro, notas = {} }: Props) {
   const derecha = ((heroe + 1) % 4) as Posicion
   const arriba = companeroDe(heroe)
   const izquierda = ((heroe + 3) % 4) as Posicion
 
   const asiento = (p: Posicion, lugar: string) => {
     const info = jugadores[p]
-    const datos = describir(info)
+    const datos = [...describir(info), ...(notas[p] ?? [])]
     const rol = p === heroe ? 'Tú' : p === arriba ? 'Compañero' : 'Rival'
     return (
       <div className={`asiento asiento--${lugar} ${p === heroe || p === arriba ? 'asiento--nuestro' : 'asiento--suyo'}`}>

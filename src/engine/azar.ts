@@ -27,3 +27,8 @@ export function extraer<T>(arr: T[], k: number, rng: Rng): T[] {
   }
   return arr.slice(n - k)
 }
+
+/** Semilla impredecible para partidas reales (no para tests). */
+export function semillaAleatoria(): number {
+  return Math.floor(Math.random() * 2 ** 32)
+}
