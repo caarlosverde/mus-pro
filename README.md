@@ -32,6 +32,7 @@ npm install
 npm run dev        # servidor de desarrollo
 npm run check      # tipos + lint + tests
 npm run build      # build de producción en dist/
+npm run artifact   # empaqueta la app para publicarla como Artifact de claude.ai
 ```
 
 ## Estructura

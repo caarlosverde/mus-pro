@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b",
     "lint": "oxlint",
-    "check": "npm run typecheck && npm run lint && npm run test"
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "artifact": "node scripts/artifact.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
