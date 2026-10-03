@@ -1,0 +1,14 @@
+{
+  "name": "Mus Pro · Entrenador de mus",
+  "short_name": "Mus Pro",
+  "description": "Entrenador de mus de nivel avanzado: probabilidades, problemas de final de juego y estrategia.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#1b5e3c",
+  "icons": [
+    { "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

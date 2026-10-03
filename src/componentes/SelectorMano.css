@@ -1,0 +1,58 @@
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.selector__mano {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--felt), var(--felt-2));
+  justify-content: center;
+}
+
+.selector__teclado {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.tecla {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.tecla:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tecla:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tecla__simbolo {
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.tecla__info {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.selector__acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,79 @@
+.carta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 54px;
+  height: 80px;
+  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 3px var(--card-bg), inset 0 0 0 4px rgba(0, 0, 0, 0.06);
+  color: #2a2a2a;
+  font-weight: 700;
+  padding: 0;
+  user-select: none;
+}
+
+.carta--peque {
+  width: 40px;
+  height: 58px;
+  border-radius: 6px;
+}
+
+.carta--oros { --palo: var(--oros); }
+.carta--copas { --palo: var(--copas); }
+.carta--espadas { --palo: var(--espadas); }
+.carta--bastos { --palo: var(--bastos); }
+
+.carta__esquina {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--palo);
+}
+
+.carta--peque .carta__esquina {
+  font-size: 12px;
+  top: 3px;
+  left: 4px;
+}
+
+.carta__esquina--abajo {
+  top: auto;
+  left: auto;
+  bottom: 4px;
+  right: 6px;
+  transform: rotate(180deg);
+}
+
+.carta--peque .carta__esquina--abajo {
+  bottom: 3px;
+  right: 4px;
+}
+
+.carta--boton {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.carta--boton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.carta--oculta {
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.08) 0 6px, transparent 6px 12px),
+    linear-gradient(135deg, var(--felt), var(--felt-2));
+  border-color: var(--felt-2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+.mano {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}

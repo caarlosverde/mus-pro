@@ -1,0 +1,122 @@
+.lab {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .lab {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.lab__entrada,
+.lab__salida,
+.resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 861px) {
+  .lab__salida {
+    position: sticky;
+    top: 76px;
+    max-height: calc(100dvh - 92px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+}
+
+.resultados {
+  transition: opacity 0.2s ease;
+}
+
+.resultados--calculando {
+  opacity: 0.55;
+}
+
+.resumen-jugada {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.jugador {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--ellos);
+  background: var(--surface-2);
+}
+
+.jugador--companero {
+  border-left-color: var(--nosotros);
+}
+
+.jugador__fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lecturas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lectura {
+  padding: 8px 10px 8px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--muted);
+  font-size: 0.92rem;
+}
+
+.lectura--bueno {
+  border-left-color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.lectura--malo {
+  border-left-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla th,
+.tabla td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.tabla thead th {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tabla__total th,
+.tabla__total td {
+  font-weight: 800;
+  border-bottom: none;
+}

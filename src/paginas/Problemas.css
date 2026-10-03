@@ -1,0 +1,168 @@
+.tarjeta-problema {
+  text-decoration: none;
+  color: inherit;
+  gap: 10px;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.tarjeta-problema:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.tarjeta-problema__cabecera,
+.tarjeta-problema__pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tarjeta-problema__pie {
+  justify-content: flex-start;
+}
+
+.nivel {
+  color: var(--gold);
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+}
+
+.nivel__vacio {
+  color: var(--border);
+}
+
+.volver {
+  font-size: 0.9rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.marcador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+
+.marcador__lado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.marcador__lado span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+
+.marcador__lado strong {
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.marcador__lado--nosotros strong {
+  color: #9be2b8;
+}
+
+.marcador__lado--ellos strong {
+  color: #ffc49b;
+}
+
+.marcador__sep {
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+.historia {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pregunta {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.opcion {
+  flex: 1 1 120px;
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.opcion:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.opcion:disabled {
+  cursor: default;
+}
+
+.opcion--correcta {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.opcion--fallida {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.opcion--apagada {
+  opacity: 0.55;
+}
+
+.explicacion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.leccion {
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--accent-soft);
+  border-left: 4px solid var(--gold);
+}
+
+.leccion span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+
+.leccion p {
+  font-weight: 600;
+}
+
+.navegacion-problemas {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}

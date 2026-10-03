@@ -1,0 +1,88 @@
+.mesa {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 1.2fr) 1fr;
+  grid-template-areas:
+    '. arriba .'
+    'izquierda centro derecha'
+    '. abajo .';
+  gap: 12px;
+  align-items: center;
+  justify-items: center;
+}
+
+.asiento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  min-width: 0;
+}
+
+.asiento--arriba { grid-area: arriba; }
+.asiento--izquierda { grid-area: izquierda; }
+.asiento--derecha { grid-area: derecha; }
+.asiento--abajo { grid-area: abajo; }
+
+.asiento__nombre {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.asiento--nuestro .asiento__nombre strong {
+  color: #9be2b8;
+}
+
+.asiento--suyo .asiento__nombre strong {
+  color: #ffc49b;
+}
+
+.asiento .mano {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.asiento__datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  max-width: 220px;
+}
+
+.asiento__dato {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.mesa__centro {
+  grid-area: centro;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .mesa {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'arriba arriba'
+      'centro centro'
+      'izquierda derecha'
+      'abajo abajo';
+  }
+
+  .asiento .mano .carta--peque {
+    width: 30px;
+    height: 44px;
+  }
+
+  .asiento .mano .carta--peque .carta__centro svg {
+    width: 14px;
+    height: 14px;
+  }
+}

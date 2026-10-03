@@ -1,0 +1,141 @@
+:root {
+  --bg: #f4f1ea;
+  --surface: #ffffff;
+  --surface-2: #f8f6f1;
+  --border: #e3ddd0;
+  --text: #1d2420;
+  --muted: #5f6a63;
+  --accent: #1f6b45;
+  --accent-soft: #e2f0e7;
+  --accent-text: #ffffff;
+  --gold: #b8860b;
+  --danger: #b3261e;
+  --danger-soft: #fbe9e7;
+  --ok: #1f7a3f;
+  --ok-soft: #e3f4e8;
+  --felt: #1b5e3c;
+  --felt-2: #164d31;
+  --card-bg: #fffdf7;
+  --card-border: #d9d2c0;
+  --oros: #c9930a;
+  --copas: #c0392b;
+  --espadas: #2b5ea7;
+  --bastos: #2e7d32;
+  --nosotros: #1f6b45;
+  --ellos: #b3561e;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --radius: 14px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #101512;
+    --surface: #18201b;
+    --surface-2: #1d2621;
+    --border: #2b372f;
+    --text: #e7ece8;
+    --muted: #9aa69e;
+    --accent: #4cb67d;
+    --accent-soft: #1d3a2a;
+    --accent-text: #08130c;
+    --gold: #e0b24a;
+    --danger: #ff8a80;
+    --danger-soft: #3a1d1b;
+    --ok: #6fd39a;
+    --ok-soft: #173325;
+    --felt: #164d31;
+    --felt-2: #10391f;
+    --card-bg: #f4efe2;
+    --card-border: #c8bfa8;
+    --nosotros: #4cb67d;
+    --ellos: #f0965a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #101512;
+  --surface: #18201b;
+  --surface-2: #1d2621;
+  --border: #2b372f;
+  --text: #e7ece8;
+  --muted: #9aa69e;
+  --accent: #4cb67d;
+  --accent-soft: #1d3a2a;
+  --accent-text: #08130c;
+  --gold: #e0b24a;
+  --danger: #ff8a80;
+  --danger-soft: #3a1d1b;
+  --ok: #6fd39a;
+  --ok-soft: #173325;
+  --felt: #164d31;
+  --felt-2: #10391f;
+  --card-bg: #f4efe2;
+  --card-border: #c8bfa8;
+  --nosotros: #4cb67d;
+  --ellos: #f0965a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1rem;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
