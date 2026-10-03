@@ -9,27 +9,12 @@ import { senasConocidas } from '../engine/mano'
 import { NOMBRE_POSICION, POSICIONES, companeroDe, parejaDe, rival, type Posicion } from '../engine/mesa'
 import { useAjustes } from '../estado/ajustes'
 import { evaluarEnSegundoPlano } from '../estado/evaluador'
+import { actualizarProgreso, hoy, useProgreso } from '../estado/progreso'
 import './Problemas.css'
 
-const CLAVE = 'mus.corte.v1'
 const MUESTRAS = 600
 /** Diferencia mínima (en probabilidad de ganar el juego) para considerar una opción mejor. */
 const EMPATE = 0.01
-
-interface Marcas {
-  intentos: number
-  aciertos: number
-  racha: number
-  mejorRacha: number
-}
-
-function leer(): Marcas {
-  try {
-    return { intentos: 0, aciertos: 0, racha: 0, mejorRacha: 0, ...JSON.parse(localStorage.getItem(CLAVE) ?? '{}') }
-  } catch {
-    return { intentos: 0, aciertos: 0, racha: 0, mejorRacha: 0 }
-  }
-}
 
 type Decision = 'mus' | 'corto'
 
@@ -38,7 +23,7 @@ export function Corte() {
   const [situacion, setSituacion] = useState<SituacionCorte | null>(null)
   const [elegida, setElegida] = useState<Decision | null>(null)
   const [evaluacion, setEvaluacion] = useState<Evaluacion | null | 'error'>(null)
-  const [marcas, setMarcas] = useState<Marcas>(leer)
+  const marcas = useProgreso('corte')
 
   const nueva = useCallback(() => {
     setSituacion(generarSituacionCorte(reglas, crearRng(Date.now())))
@@ -68,20 +53,17 @@ export function Corte() {
         const [mus, corto] = ev.alternativas
         const diferencia = corto.pJuego - mus.pJuego
         const acierto = Math.abs(diferencia) < EMPATE || (diferencia > 0) === (d === 'corto')
-        setMarcas((m) => {
+        actualizarProgreso('corte', (m) => {
           const racha = acierto ? m.racha + 1 : 0
-          const nuevas = {
+          const d = hoy()
+          const [di, da] = m.dias[d] ?? [0, 0]
+          return {
             intentos: m.intentos + 1,
             aciertos: m.aciertos + (acierto ? 1 : 0),
             racha,
             mejorRacha: Math.max(m.mejorRacha, racha),
+            dias: { ...m.dias, [d]: [di + 1, da + (acierto ? 1 : 0)] },
           }
-          try {
-            localStorage.setItem(CLAVE, JSON.stringify(nuevas))
-          } catch {
-            // Sin almacenamiento: las marcas duran la sesión.
-          }
-          return nuevas
         })
       })
       .catch(() => setEvaluacion('error'))

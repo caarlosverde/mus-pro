@@ -400,3 +400,43 @@
   border-color: transparent;
   color: var(--text);
 }
+
+/* Acceso a la cuenta en la cabecera */
+.usuario-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-decoration: none;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  font-size: 0.9rem;
+  max-width: 180px;
+  flex: none;
+}
+
+.usuario-chip:hover,
+.usuario-chip.activo {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.usuario-chip__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f3c24a;
+  color: #2a2208;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex: none;
+}
+
+.usuario-chip__nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

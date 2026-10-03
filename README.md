@@ -25,6 +25,34 @@ Aplicación web (instalable en el móvil) para **mejorar en el mus a nivel avanz
 - **Evaluación de decisiones por simulación (rollouts)**: se generan repartos compatibles con lo que sabías, se ponderan por la verosimilitud de lo que hicieron los rivales (inferencia bayesiana con las propias políticas de los bots) y se juega la mano hasta el final con cada alternativa, con números aleatorios comunes.
 - Los cálculos pesados corren en **Web Workers** para no bloquear la interfaz.
 
+## Cuentas y juego online
+
+El servidor está en `servidor/` (Cloudflare Workers, gratis):
+
+- **Cuentas** con nombre de usuario único y contraseña (PBKDF2, 100.000 iteraciones), sin email. Al registrarse se entrega un código de recuperación. Sesiones con token (sólo se guarda su hash), límite de intentos fallidos.
+- **Mesas online** como Durable Objects: el servidor reparte y guarda las cartas y envía a cada jugador sólo su vista (no se puede hacer trampa mirando el tráfico). Bots en los huecos; si alguien se desconecta, un bot juega por él a los 45 s hasta que vuelve.
+- **Con amigos** (código o enlace de invitación) o **con gente nueva** (el vestíbulo te sienta en una mesa pública; arranca al llenarse o a los 40 s con bots).
+- **Perfil y progreso** sincronizados entre dispositivos: vacas online y contra bots, entrenador de corte, problemas y precisión de las decisiones, con gráficas por semana.
+
+### Probarlo en local
+
+```bash
+cd servidor
+npm install
+npm run db:local          # crea la base de datos local
+npm run dev               # servidor en http://127.0.0.1:8787
+node pruebas/integracion.mjs   # prueba de punta a punta
+```
+
+Con el servidor local en marcha, `npm run dev` en la raíz usa el modo online automáticamente.
+
+### Ponerlo en internet
+
+1. Crea una cuenta gratuita en Cloudflare y, en `servidor/`, ejecuta `npx wrangler login`.
+2. `npx wrangler d1 create mus-pro` y copia el `database_id` en `servidor/wrangler.jsonc`.
+3. `npm run db:remoto` y `npm run deploy` (te da la dirección `https://mus-pro.<tu-subdominio>.workers.dev`).
+4. En la raíz, crea `.env.production` con `VITE_API_URL=https://mus-pro.<tu-subdominio>.workers.dev` y ejecuta `npm run publicar`.
+
 ## Desarrollo
 
 Requisitos: Node 20 o superior.
@@ -46,7 +74,8 @@ src/
   datos/         Contenido: problemas, consejos, glosario
   componentes/   Cartas, mesa, selector de mano, controles
   paginas/       Inicio, Laboratorio, Problemas, Reglas
-  estado/        Ajustes (localStorage), rutas, hook del worker
+  estado/        Ajustes, sesión, progreso sincronizado, API, rutas, workers
+servidor/        Cloudflare Worker: API, mesas (Durable Objects), base de datos D1
 ```
 
 ## Próximos pasos

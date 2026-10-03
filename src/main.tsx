@@ -2,12 +2,15 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { ProveedorAjustes } from './estado/ajustes.tsx'
+import { ProveedorSesion } from './estado/sesion.tsx'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ProveedorAjustes>
-      <App />
+      <ProveedorSesion>
+        <App />
+      </ProveedorSesion>
     </ProveedorAjustes>
   </StrictMode>,
 )

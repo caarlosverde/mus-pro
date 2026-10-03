@@ -2,16 +2,22 @@ import './App.css'
 import { IconoPalo } from './componentes/Carta'
 import { useRuta } from './estado/ruta'
 import { Corte } from './paginas/Corte'
+import { Cuenta } from './paginas/Cuenta'
 import { Entrenar } from './paginas/Entrenar'
 import { Inicio } from './paginas/Inicio'
 import { Laboratorio } from './paginas/Laboratorio'
+import { MesaOnline } from './paginas/MesaOnline'
+import { Jugar, Online } from './paginas/Online'
 import { Partida } from './paginas/Partida'
+import { Perfil } from './paginas/Perfil'
 import { Problemas } from './paginas/Problemas'
 import { ReglasPagina } from './paginas/Reglas'
+import { hayServidor } from './estado/api'
+import { useSesion } from './estado/sesion'
 
 const SECCIONES = [
   { ruta: '', texto: 'Inicio', palo: 'oros', incluye: [] as string[] },
-  { ruta: 'jugar', texto: 'Jugar', palo: 'copas', incluye: [] },
+  { ruta: 'jugar', texto: 'Jugar', palo: 'copas', incluye: ['online', 'mesa'] },
   { ruta: 'entrenar', texto: 'Entrenar', palo: 'espadas', incluye: ['corte', 'problemas'] },
   { ruta: 'laboratorio', texto: 'Laboratorio', palo: 'bastos', incluye: [] },
   { ruta: 'reglas', texto: 'Reglas', palo: null, incluye: [] },
@@ -28,11 +34,24 @@ function IconoLibro({ size = 18 }: { size?: number }) {
 
 export default function App() {
   const [seccion = '', ...resto] = useRuta()
+  const { usuario } = useSesion()
 
   let pagina
   switch (seccion) {
     case 'jugar':
-      pagina = <Partida />
+      pagina = resto[0] === 'bots' ? <Partida /> : <Jugar />
+      break
+    case 'online':
+      pagina = <Online />
+      break
+    case 'mesa':
+      pagina = resto[0] ? <MesaOnline codigo={resto[0].toUpperCase()} /> : <Online />
+      break
+    case 'cuenta':
+      pagina = <Cuenta />
+      break
+    case 'perfil':
+      pagina = <Perfil nombre={resto[0] ? decodeURIComponent(resto[0]) : undefined} />
       break
     case 'entrenar':
       pagina = <Entrenar />
@@ -77,6 +96,14 @@ export default function App() {
               )
             })}
           </nav>
+          {hayServidor && (
+            <a className={`usuario-chip ${seccion === 'cuenta' || seccion === 'perfil' ? 'activo' : ''}`} href={usuario ? '#/perfil' : '#/cuenta'}>
+              <span className="usuario-chip__avatar" aria-hidden>
+                {usuario ? usuario.nombre[0].toUpperCase() : '?'}
+              </span>
+              <span className="usuario-chip__nombre">{usuario ? usuario.nombre : 'Entrar'}</span>
+            </a>
+          )}
         </div>
       </header>
       <main className="contenido">{pagina}</main>

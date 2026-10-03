@@ -22,6 +22,7 @@
   --espadas: #2b5ea7;
   --bastos: #2e7d32;
   --nosotros: #1f6b45;
+  --grafica: #22915a;
   --ellos: #b3561e;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.05);
   --radius: 14px;
@@ -49,6 +50,7 @@
     --card-bg: #f4efe2;
     --card-border: #c8bfa8;
     --nosotros: #4cb67d;
+  --grafica: #3fa56d;
     --ellos: #f0965a;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
     color-scheme: dark;
@@ -75,6 +77,7 @@
   --card-bg: #f4efe2;
   --card-border: #c8bfa8;
   --nosotros: #4cb67d;
+  --grafica: #3fa56d;
   --ellos: #f0965a;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
   color-scheme: dark;

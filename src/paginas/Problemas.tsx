@@ -4,39 +4,17 @@ import { Barra, Etiqueta, Panel } from '../componentes/ui'
 import { parejaDe, rival } from '../engine/mesa'
 import { reglasDe, resolverProblema, type Problema, type ResultadoOpcion } from '../engine/problemas'
 import { PROBLEMAS } from '../datos/problemas'
+import { actualizarProgreso, useProgreso } from '../estado/progreso'
 import { irA } from '../estado/ruta'
 import './Problemas.css'
 
-const CLAVE = 'mus.problemas.v1'
-type Progreso = Record<string, 'acierto' | 'fallo'>
-
-function leerProgreso(): Progreso {
-  try {
-    return JSON.parse(localStorage.getItem(CLAVE) ?? '{}') as Progreso
-  } catch {
-    return {}
-  }
-}
-
-function guardarProgreso(p: Progreso) {
-  try {
-    localStorage.setItem(CLAVE, JSON.stringify(p))
-  } catch {
-    // Sin almacenamiento: el progreso no se recuerda.
-  }
-}
-
 export function Problemas({ id }: { id?: string }) {
-  const [progreso, setProgreso] = useState<Progreso>(leerProgreso)
+  const progreso = useProgreso('problemas')
   const problema = id ? PROBLEMAS.find((p) => p.id === id) : undefined
 
   const registrar = (pid: string, acierto: boolean) => {
-    setProgreso((prev) => {
-      if (prev[pid]) return prev // cuenta el primer intento
-      const nuevo: Progreso = { ...prev, [pid]: acierto ? 'acierto' : 'fallo' }
-      guardarProgreso(nuevo)
-      return nuevo
-    })
+    if (progreso[pid]) return // cuenta el primer intento
+    actualizarProgreso('problemas', (prev) => ({ ...prev, [pid]: acierto ? 'acierto' : 'fallo' }))
   }
 
   if (problema) return <DetalleProblema key={problema.id} p={problema} onResponder={registrar} />
@@ -60,10 +38,7 @@ export function Problemas({ id }: { id?: string }) {
             <button
               type="button"
               className="boton boton--peque"
-              onClick={() => {
-                guardarProgreso({})
-                setProgreso({})
-              }}
+              onClick={() => actualizarProgreso('problemas', () => ({}))}
             >
               Reiniciar
             </button>

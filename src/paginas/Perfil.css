@@ -1,0 +1,143 @@
+.perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fichas {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.ficha__titulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.ficha__valor {
+  font-size: 1.7rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.ficha__detalle {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.grafica {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grafica__lectura {
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-height: 1.4em;
+  font-variant-numeric: tabular-nums;
+}
+
+.grafica__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  touch-action: manipulation;
+}
+
+.grafica__rejilla {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.grafica__base {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.grafica__eje {
+  fill: var(--muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.grafica__barra {
+  fill: var(--grafica);
+  transition: opacity 0.15s ease;
+}
+
+.grafica__svg:hover .grafica__barra:not(.grafica__barra--activa) {
+  opacity: 0.55;
+}
+
+.grafica__tabla summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.recientes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recientes li {
+  display: grid;
+  grid-template-columns: 5.5rem 3rem minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border-left: 4px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.reciente--gana {
+  border-left-color: var(--ok) !important;
+}
+
+.reciente--pierde {
+  border-left-color: var(--danger) !important;
+}
+
+.reciente__resultado {
+  font-weight: 700;
+}
+
+.reciente__marcador {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.reciente__detalle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .recientes li {
+    grid-template-columns: auto auto 1fr;
+  }
+
+  .reciente__detalle {
+    grid-column: 1 / -1;
+    order: 4;
+  }
+}

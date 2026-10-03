@@ -1,0 +1,146 @@
+.mesa-online__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mesa-online__cabecera > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.codigo-mesa {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.asientos-espera {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.asiento-espera {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--nosotros);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+}
+
+.asiento-espera--eo {
+  border-left-color: var(--ellos);
+}
+
+.asiento-espera:not(:disabled):hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.asiento-espera:disabled {
+  cursor: default;
+}
+
+.asiento-espera--mio {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.asiento-espera__rotulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.asiento-espera__tu {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.unirse {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.unirse__fila {
+  display: flex;
+  gap: 8px;
+}
+
+.unirse__fila input {
+  font: inherit;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  width: 9ch;
+  min-width: 0;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat__mensajes {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: 200px;
+  min-height: 80px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.chat__frases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat__escribir {
+  display: flex;
+  gap: 8px;
+}
+
+.chat__escribir input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.desconectado {
+  font-weight: 500;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
