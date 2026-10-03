@@ -50,11 +50,15 @@ export function reglasDe(p: Problema): Reglas {
 }
 
 /**
- * Estimación sencilla de ganar un juego a partir de las piedras que faltan a
- * cada pareja (modelo logístico). Sólo se usa cuando la mano no decide el juego.
+ * Estimación de ganar un juego a partir de las piedras que faltan a cada pareja
+ * (modelo logístico). La escala depende de lo que queda: al principio una piedra
+ * pesa poco (quedan muchas manos y mucha varianza) y al final pesa muchísimo.
  */
 export function estimarDesdeMarcador(faltanNosotros: number, faltanEllos: number): number {
-  return 1 / (1 + Math.exp((faltanNosotros - faltanEllos) / 6))
+  if (faltanNosotros <= 0) return 1
+  if (faltanEllos <= 0) return 0
+  const escala = 2 + 0.3 * ((faltanNosotros + faltanEllos) / 2)
+  return 1 / (1 + Math.exp((faltanNosotros - faltanEllos) / escala))
 }
 
 /**
