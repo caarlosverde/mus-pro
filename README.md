@@ -1,5 +1,7 @@
 # Mus Pro · Entrenador de mus
 
+**App publicada:** https://caarlosverde.github.io/mus-pro-app/
+
 Aplicación web (instalable en el móvil) para **mejorar en el mus a nivel avanzado**: cuándo cortar, cuánto envidar, cuándo ver un órdago y qué llevan los demás. Las reglas básicas están en un apartado secundario; el foco es la estrategia.
 
 ## Qué hay ahora
@@ -33,6 +35,7 @@ npm run dev        # servidor de desarrollo
 npm run check      # tipos + lint + tests
 npm run build      # build de producción en dist/
 npm run artifact   # empaqueta la app para publicarla como Artifact de claude.ai
+npm run publicar   # compila y publica en GitHub Pages (repositorio público mus-pro-app)
 ```
 
 ## Estructura
