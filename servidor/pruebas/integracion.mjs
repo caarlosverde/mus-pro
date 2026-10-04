@@ -10,7 +10,7 @@ const ok = (texto) => console.log(`  ✓ ${texto}`) || pasos++
 async function api(ruta, { metodo = 'GET', token, cuerpo } = {}) {
   const r = await fetch(BASE + ruta, {
     method: metodo,
-    headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:5173', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { 'Content-Type': 'application/json', Origin: process.env.ORIGEN ?? 'http://localhost:5173', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: cuerpo ? JSON.stringify(cuerpo) : undefined,
   })
   const datos = await r.json().catch(() => null)
@@ -29,7 +29,7 @@ ok('nombre disponible')
 r = await api('/api/registro', { metodo: 'POST', cuerpo: { nombre: ana, contrasena: 'secreta1' } })
 assert.equal(r.estado, 201, JSON.stringify(r.datos))
 assert.match(r.datos.codigoRecuperacion, /^[A-Z0-9]{4}(-[A-Z0-9]{4}){3}$/)
-assert.equal(r.cabeceras.get('access-control-allow-origin'), 'http://localhost:5173')
+assert.equal(r.cabeceras.get('access-control-allow-origin'), process.env.ORIGEN ?? 'http://localhost:5173')
 const recuperacionAna = r.datos.codigoRecuperacion
 let tokenAna = r.datos.token
 ok('registro con código de recuperación y CORS')
