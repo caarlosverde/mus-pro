@@ -12,8 +12,7 @@
     {
       "binding": "DB",
       "database_name": "mus-pro",
-      // Se rellena con el id real al crear la base de datos en Cloudflare (wrangler d1 create mus-pro).
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "41d12761-09b4-4af0-81c0-6a3a1f2a51b0",
       "migrations_dir": "migraciones"
     }
   ],
