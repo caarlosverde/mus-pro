@@ -9,31 +9,41 @@ import './Inicio.css'
 
 const MODULOS = [
   {
-    ruta: 'jugar',
-    titulo: 'Jugar contra bots',
-    texto: 'Vaca completa contra el bravo, el conservador, el farolero... Al acabar cada mano, revisa tus decisiones con su probabilidad de ganar.',
-    listo: true,
+    ruta: 'jugar/bots',
+    titulo: 'Contra bots',
+    etiqueta: 'Sin conexión',
+    texto: 'Vaca completa contra el bravo, el conservador, el farolero… y al acabar cada mano, la revisión de tus decisiones.',
+  },
+  {
+    ruta: 'online',
+    titulo: 'Online',
+    etiqueta: 'Con gente',
+    texto: 'Partidas con amigos o con desconocidos, puntuables o amistosas, con señas hechas con la cara del avatar.',
   },
   {
     ruta: 'corte',
     titulo: 'Entrenador de corte',
+    etiqueta: 'Ilimitado',
     texto: '¿Mus o no hay mus? Situaciones sin fin según posición, marcador y señas, evaluadas jugando la mano cientos de veces.',
-    listo: true,
   },
   {
     ruta: 'problemas',
     titulo: 'Problemas de final',
+    etiqueta: 'Calculados',
     texto: 'Situaciones de "estar dentro": órdagos, orden de cobro, el envite justo. Cada solución está calculada, no opinada.',
-    listo: true,
   },
   {
     ruta: 'laboratorio',
     titulo: 'Laboratorio',
-    texto: 'Tu mano, tu posición, las señas que has visto y con cuántas cartas se quedó cada uno: probabilidades de cada lance y qué llevan los demás.',
-    listo: true,
+    etiqueta: '20.000 repartos',
+    texto: 'Tu mano, tu posición y lo que has visto: probabilidades de cada lance y qué llevan los demás.',
   },
-  { titulo: 'Lectura del rival', texto: 'Qué manos le quedan posibles a un rival según lo que ha hecho y dicho.', listo: false },
-  { titulo: 'Análisis de partidas', texto: 'Estadísticas de tus partidas: dónde ganas y dónde se te escapan las piedras.', listo: false },
+  {
+    ruta: 'ranking',
+    titulo: 'Ranking',
+    etiqueta: 'Individual y parejas',
+    texto: 'Los mejores jugadores y parejas por puntos. Ganar a rivales de más nivel da más.',
+  },
 ]
 
 /** Un consejo distinto cada día (se fija al cargar la app). */
@@ -71,26 +81,15 @@ export function Inicio() {
       </section>
 
       <div className="rejilla">
-        {MODULOS.map((m) => {
-          const contenido = (
-            <>
-              <div className="modulo__cabecera">
-                <h2>{m.titulo}</h2>
-                {m.listo ? <Etiqueta tono="ok">Disponible</Etiqueta> : <Etiqueta>Próximamente</Etiqueta>}
-              </div>
-              <p className="texto-suave">{m.texto}</p>
-            </>
-          )
-          return m.listo ? (
-            <a key={m.titulo} className="modulo panel modulo--activo" href={`#/${m.ruta}`}>
-              {contenido}
-            </a>
-          ) : (
-            <div key={m.titulo} className="modulo panel modulo--pronto">
-              {contenido}
+        {MODULOS.map((m) => (
+          <a key={m.titulo} className="modulo panel modulo--activo" href={`#/${m.ruta}`}>
+            <div className="modulo__cabecera">
+              <h2>{m.titulo}</h2>
+              <Etiqueta tono="ok">{m.etiqueta}</Etiqueta>
             </div>
-          )
-        })}
+            <p className="texto-suave">{m.texto}</p>
+          </a>
+        ))}
       </div>
 
       <div className="rejilla">

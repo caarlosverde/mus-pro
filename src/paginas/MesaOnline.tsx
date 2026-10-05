@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
-import { AvisoJuego, ChatMesa, ControlesJuego, MarcadorMesa, MesaJuego, PanelSenas, RecuentoMano, RegistroJuego, type EtiquetaAsiento } from '../componentes/MesaJuego'
-import { tituloFase } from '../componentes/mesaTextos'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ChatMesa, RegistroJuego } from '../componentes/PiezasMesa'
+import { PantallaJuego, type EtiquetaJugador } from '../componentes/PantallaJuego'
 import { Etiqueta, Panel } from '../componentes/ui'
 import type { Asiento } from '../engine/partida'
 import type { VistaMesa } from '../engine/sala'
 import { hayServidor } from '../estado/api'
+import { useAyudas } from '../estado/gestos'
+import { irA } from '../estado/ruta'
 import { useMesaOnline, type MensajeMesa } from '../estado/useMesaOnline'
 import { useSesion } from '../estado/sesion'
 import './Partida.css'
@@ -58,7 +60,7 @@ function MesaConectada({ codigo }: { codigo: string }) {
           {aviso}
         </p>
       )}
-      {vista.fase === 'esperando' ? <SalaDeEspera v={vista} enviar={enviar} /> : <Juego v={vista} enviar={enviar} />}
+      {vista.fase === 'esperando' ? <SalaDeEspera v={vista} enviar={enviar} /> : <Juego v={vista} enviar={enviar} toast={aviso ?? (estado !== 'conectado' ? 'Reconectando con la mesa…' : null)} />}
     </>
   )
 }
@@ -195,75 +197,95 @@ function Buscando({ desde, enviar }: { desde: number; enviar: (m: MensajeMesa) =
   )
 }
 
-function Juego({ v, enviar }: { v: VistaMesa; enviar: (m: MensajeMesa) => void }) {
-  const etiqueta = (a: Asiento): EtiquetaAsiento => {
+function Juego({ v, enviar, toast }: { v: VistaMesa; enviar: (m: MensajeMesa) => void; toast: string | null }) {
+  const [ayudas, setAyudas] = useAyudas()
+  const [leidos, setLeidos] = useState(v.chat.length)
+  const etiqueta = (a: Asiento): EtiquetaJugador => {
     const j = v.jugadores[a]
     if (a === v.miAsiento) return { nombre: `${j.nombre} (tú)` }
     return { nombre: j.nombre, detalle: j.tipo === 'bot' ? 'bot' : undefined }
   }
   const nombre = (a: Asiento) => (a === v.miAsiento ? 'Tú' : v.jugadores[a].nombre)
-  const m = v.mano
   const listos = v.jugadores.filter((j) => j.tipo === 'humano' && v.listos[j.asiento]).length
   const humanos = v.jugadores.filter((j) => j.tipo === 'humano' && j.conectado).length
   const hayBot = v.jugadores.some((j) => j.tipo === 'bot')
+  const sinLeer = v.chat.slice(leidos).some((c) => c.de !== v.miAsiento)
 
   return (
-    <>
-      <div className="partida__cabecera">
-        <MarcadorMesa v={v} />
-        {v.miAsiento === null && hayBot && v.fase === 'jugando' && (
-          <button type="button" className="boton boton--primario" onClick={() => enviar({ tipo: 'sentarse' })}>
+    <PantallaJuego
+      v={v}
+      etiqueta={etiqueta}
+      onAccion={(accion) => enviar({ tipo: 'accion', accion })}
+      onSena={(sena) => enviar({ tipo: 'sena', sena })}
+      onSalir={() => irA('online')}
+      textoSalir="Salir de la mesa"
+      confirmarSalida={
+        v.fase === 'jugando' && v.miAsiento !== null
+          ? v.modo === 'amistosa'
+            ? '¿Salir de la mesa? Un bot jugará por ti hasta que vuelvas.'
+            : '¿Salir de la mesa? Un bot jugará por ti, y la partida cuenta igual para el ranking.'
+          : undefined
+      }
+      ayudas={ayudas}
+      onAyudas={setAyudas}
+      toast={toast}
+      aviso={
+        v.miAsiento === null && hayBot && v.fase === 'jugando' ? (
+          <button type="button" className="jb jb--primario" onClick={() => enviar({ tipo: 'sentarse' })}>
             Sentarme en el sitio de un bot
           </button>
-        )}
-      </div>
-
-      <MesaJuego v={v} etiqueta={etiqueta} />
-
-      <div className="partida__inferior">
-        <Panel titulo={v.fase === 'terminada' ? 'Fin de la partida' : tituloFase(v)}>
-          {m && m.fase !== 'fin' && m.turno === v.miAsiento && <ControlesJuego v={v} onAccion={(accion) => enviar({ tipo: 'accion', accion })} />}
-          {m && m.fase !== 'fin' && m.turno !== v.miAsiento && m.turno !== null && <p className="texto-suave">Habla {nombre(m.turno)}…</p>}
-          <PanelSenas v={v} onSena={(sena) => enviar({ tipo: 'sena', sena })} />
-          {m?.fase === 'fin' && (
-            <div className="fin-mano">
-              <AvisoJuego v={v} />
-              <CambiosPuntos v={v} />
-              <RecuentoMano v={v} />
-              {v.fase === 'terminada' ? (
-                <div className="acciones">
-                  <a className="boton boton--primario" href="#/online">
-                    Volver
-                  </a>
-                  <a className="boton" href="#/ranking">
-                    Ver el ranking
-                  </a>
-                </div>
-              ) : (
-                v.miAsiento !== null && (
-                  <div className="acciones">
-                    <button type="button" className="boton boton--primario" disabled={v.listos[v.miAsiento]} onClick={() => enviar({ tipo: 'listo' })}>
-                      {v.listos[v.miAsiento] ? 'Esperando a los demás…' : 'Siguiente mano →'}
-                    </button>
-                    <span className="texto-suave">
-                      {listos} de {humanos} listos
-                    </span>
-                  </div>
-                )
-              )}
+        ) : null
+      }
+      finMano={
+        <>
+          <CambiosPuntos v={v} />
+          {v.fase === 'terminada' ? (
+            <div className="acciones">
+              <a className="boton boton--primario" href="#/online">
+                Volver
+              </a>
+              <a className="boton" href="#/ranking">
+                Ver el ranking
+              </a>
             </div>
+          ) : (
+            v.miAsiento !== null && (
+              <div className="acciones">
+                <button type="button" className="boton boton--primario" disabled={v.listos[v.miAsiento]} onClick={() => enviar({ tipo: 'listo' })}>
+                  {v.listos[v.miAsiento] ? 'Esperando a los demás…' : 'Siguiente mano →'}
+                </button>
+                <span className="texto-suave">
+                  {listos} de {humanos} listos
+                </span>
+              </div>
+            )
           )}
-        </Panel>
-        <Panel titulo="Mesa">
-          <ChatMesa v={v} onDecir={(texto) => enviar({ tipo: 'chat', texto })} />
-          <details>
-            <summary className="texto-suave">Lo que ha pasado en la mano</summary>
-            <RegistroJuego v={v} nombre={nombre} />
-          </details>
-        </Panel>
-      </div>
-    </>
+        </>
+      }
+      pestanas={[
+        {
+          id: 'chat',
+          titulo: 'Chat',
+          icono: '✉',
+          aviso: sinLeer,
+          contenido: (
+            <ChatLeido v={v} onLeer={() => setLeidos(v.chat.length)}>
+              <ChatMesa v={v} onDecir={(texto) => enviar({ tipo: 'chat', texto })} />
+            </ChatLeido>
+          ),
+        },
+        { id: 'registro', titulo: 'Registro', icono: '≡', contenido: <RegistroJuego v={v} nombre={nombre} /> },
+      ]}
+    />
   )
+}
+
+/** Marca el chat como leído mientras está abierto. */
+function ChatLeido({ v, onLeer, children }: { v: VistaMesa; onLeer: () => void; children: ReactNode }) {
+  useEffect(() => {
+    onLeer()
+  }, [v.chat.length, onLeer])
+  return <>{children}</>
 }
 
 /** Puntos ganados o perdidos al terminar una partida puntuable. */

@@ -40,13 +40,6 @@ export function Entrenar() {
             <p className="texto-suave">{m.texto}</p>
           </a>
         ))}
-        <div className="modulo panel modulo--pronto">
-          <div className="modulo__cabecera">
-            <h2>Lectura del rival</h2>
-            <Etiqueta>Próximamente</Etiqueta>
-          </div>
-          <p className="texto-suave">Qué manos le quedan posibles a un rival según lo que ha hecho y dicho.</p>
-        </div>
       </div>
     </>
   )

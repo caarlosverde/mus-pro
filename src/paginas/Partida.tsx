@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AvisoJuego, ControlesJuego, PanelSenas, MarcadorMesa, MesaJuego, RecuentoMano, RegistroJuego, type EtiquetaAsiento } from '../componentes/MesaJuego'
-import { tituloFase } from '../componentes/mesaTextos'
+import { RegistroJuego } from '../componentes/PiezasMesa'
+import { PantallaJuego, type EtiquetaJugador } from '../componentes/PantallaJuego'
 import { Etiqueta, Panel } from '../componentes/ui'
 import { crearRng, semillaAleatoria, type Rng } from '../engine/azar'
 import { PERSONALIDADES, PERSONALIDAD_POR_ID } from '../engine/bots'
@@ -27,6 +27,7 @@ import {
 import { useAjustes } from '../estado/ajustes'
 import { api, hayServidor } from '../estado/api'
 import { evaluarEnSegundoPlano } from '../estado/evaluador'
+import { useAyudas } from '../estado/gestos'
 import { anotarDecisiones } from '../estado/progreso'
 import { useSesion } from '../estado/sesion'
 import './Partida.css'
@@ -39,8 +40,8 @@ const YO = { id: 'yo', nombre: 'Tú' }
 interface Configuracion {
   personalidades: Record<1 | 2 | 3, string>
   pasarSenas: boolean
-  /** Señas con avatar: las haces tú y hay que estar atento para ver las de los bots. */
-  avatar: boolean
+  /** Modo aprendizaje: señas en texto (automáticas) y ayuda con tu jugada. */
+  aprendizaje: boolean
 }
 
 interface DecisionRegistrada {
@@ -57,12 +58,12 @@ export function Partida() {
   const [config, setConfig] = useState<Configuracion>({
     personalidades: { 1: 'equilibrado', 2: 'equilibrado', 3: 'equilibrado' },
     pasarSenas: true,
-    avatar: false,
+    aprendizaje: false,
   })
   const [sala, setSala] = useState<Sala | null>(null)
 
   if (!sala) return <Preparacion config={config} onChange={setConfig} onEmpezar={setSala} />
-  return <MesaLocal inicial={sala} onSalir={() => setSala(null)} />
+  return <MesaLocal inicial={sala} aprendizaje={config.aprendizaje} onSalir={() => setSala(null)} />
 }
 
 // ---------------------------------------------------------------------------
@@ -75,7 +76,7 @@ function Preparacion({ config, onChange, onEmpezar }: { config: Configuracion; o
 
   const empezarPartida = () => {
     const rng = crearRng(semillaAleatoria())
-    let s = sentar(nuevaSala('LOCAL', reglas, false, { modoSenas: config.avatar ? 'avatar' : 'automaticas' }), YO, HEROE).sala
+    let s = sentar(nuevaSala('LOCAL', reglas, false, { modoSenas: config.aprendizaje ? 'automaticas' : 'avatar' }), YO, HEROE).sala
     const asientos = s.asientos.slice()
     asientos[0] = { ...(asientos[0] as Extract<Sala['asientos'][number], { tipo: 'humano' }>), senasAuto: config.pasarSenas }
     for (const a of [1, 2, 3] as const) asientos[a] = { tipo: 'bot', personalidad: config.personalidades[a] }
@@ -117,10 +118,10 @@ function Preparacion({ config, onChange, onEmpezar }: { config: Configuracion; o
       </div>
       <Panel>
         <label className="casilla">
-          <input id="senas-avatar" type="checkbox" checked={config.avatar} onChange={(e) => onChange({ ...config, avatar: e.target.checked })} />
-          Señas con avatar: las haces tú y los bots las hacen con la cara un instante (hay que estar atento para pillarlas)
+          <input id="aprendizaje" type="checkbox" checked={config.aprendizaje} onChange={(e) => onChange({ ...config, aprendizaje: e.target.checked })} />
+          Modo aprendizaje: las señas se pasan solas y se ven escritas, y siempre ves qué jugada llevas. Sin él, las señas se hacen con la cara del avatar y hay que estar atento.
         </label>
-        <label className="casilla" hidden={config.avatar}>
+        <label className="casilla" hidden={!config.aprendizaje}>
           <input id="pasar-senas" type="checkbox" checked={config.pasarSenas} onChange={(e) => onChange({ ...config, pasarSenas: e.target.checked })} />
           Pasar automáticamente mis señas a mi compañero (los rivales pueden pillarlas)
         </label>
@@ -136,7 +137,9 @@ function Preparacion({ config, onChange, onEmpezar }: { config: Configuracion; o
 // Mesa local contra bots
 // ---------------------------------------------------------------------------
 
-function MesaLocal({ inicial, onSalir }: { inicial: Sala; onSalir: () => void }) {
+function MesaLocal({ inicial, onSalir, aprendizaje }: { inicial: Sala; onSalir: () => void; aprendizaje: boolean }) {
+  const [ayudas, setAyudas] = useAyudas()
+  const [panel, setPanel] = useState<string | null>(null)
   const [sala, setSala] = useState(inicial)
   const [decisiones, setDecisiones] = useState<DecisionRegistrada[]>([])
   const [revision, setRevision] = useState<Revision[] | null>(null)
@@ -208,73 +211,69 @@ function MesaLocal({ inicial, onSalir }: { inicial: Sala; onSalir: () => void })
     anotarDecisiones(notas[0], notas[1], notas[2])
   }
 
-  const etiqueta = (a: Asiento): EtiquetaAsiento => {
+  const etiqueta = (a: Asiento): EtiquetaJugador => {
     const o = sala.asientos[a]
     return { nombre: NOMBRE_ASIENTO[a], detalle: o?.tipo === 'bot' ? PERSONALIDAD_POR_ID[o.personalidad]?.nombre : undefined }
   }
-  const m = v.mano
 
   return (
-    <>
-      <div className="partida__cabecera">
-        <MarcadorMesa v={v} />
-        <div className="partida__controles">
-          <label className="casilla">
-            <input id="modo-rapido" type="checkbox" checked={rapido} onChange={(ev) => setRapido(ev.target.checked)} /> Rápido
-          </label>
-          <button type="button" className="boton boton--peque" onClick={onSalir}>
-            Abandonar
-          </button>
-        </div>
-      </div>
-
-      <MesaJuego v={v} etiqueta={etiqueta} />
-
-      <div className="partida__inferior">
-        <Panel titulo={tituloFase(v)}>
-          {m && m.fase !== 'fin' && m.turno === HEROE && <ControlesJuego v={v} onAccion={jugarYo} />}
-          {m && m.fase !== 'fin' && m.turno !== HEROE && m.turno !== null && <p className="texto-suave">Habla {NOMBRE_ASIENTO[m.turno].toLowerCase()}…</p>}
-          <PanelSenas
-            v={v}
-            onSena={(sena) =>
-              setSala((s) => {
-                try {
-                  return hacerSena(s, HEROE, sena, rng.current)
-                } catch {
-                  return s // seña fuera de tiempo: se ignora
-                }
-              })
-            }
-          />
-          {m?.fase === 'fin' && (
-            <div className="fin-mano">
-              <AvisoJuego v={v} />
-              <RecuentoMano v={v} />
-              <div className="acciones">
-                {sala.fase === 'terminada' ? (
-                  <button type="button" className="boton boton--primario" onClick={onSalir}>
-                    Nueva partida
-                  </button>
-                ) : (
-                  <button type="button" className="boton boton--primario" onClick={siguiente}>
-                    Siguiente mano →
-                  </button>
-                )}
-                {decisiones.length > 0 && !revision && (
-                  <button type="button" className="boton" onClick={revisar}>
-                    Revisar mis decisiones
-                  </button>
-                )}
-              </div>
-              {revision && <ListaRevision revision={revision} />}
-            </div>
-          )}
-        </Panel>
-        <Panel titulo="Lo que ha pasado">
-          <RegistroJuego v={v} nombre={(a) => NOMBRE_ASIENTO[a]} />
-        </Panel>
-      </div>
-    </>
+    <PantallaJuego
+      v={v}
+      etiqueta={etiqueta}
+      onAccion={jugarYo}
+      onSena={(sena) =>
+        setSala((s) => {
+          try {
+            return hacerSena(s, HEROE, sena, rng.current)
+          } catch {
+            return s // seña fuera de tiempo: se ignora
+          }
+        })
+      }
+      onSalir={onSalir}
+      textoSalir="Abandonar la partida"
+      confirmarSalida={sala.fase !== 'terminada' ? '¿Abandonar la partida? Se perderá el marcador.' : undefined}
+      ayudas={ayudas || aprendizaje}
+      onAyudas={setAyudas}
+      extraBarra={
+        <button type="button" className={`juego__boton-barra juego__boton-texto ${rapido ? 'activo' : ''}`} aria-pressed={rapido} onClick={() => setRapido(!rapido)} title="Los bots juegan más rápido">
+          ⏩
+        </button>
+      }
+      finMano={
+        <>
+          <div className="acciones">
+            {sala.fase === 'terminada' ? (
+              <button type="button" className="boton boton--primario" onClick={onSalir}>
+                Nueva partida
+              </button>
+            ) : (
+              <button type="button" className="boton boton--primario" onClick={siguiente}>
+                Siguiente mano →
+              </button>
+            )}
+            {decisiones.length > 0 && (
+              <button
+                type="button"
+                className="boton"
+                onClick={() => {
+                  if (!revision) revisar()
+                  setPanel('revision')
+                }}
+              >
+                {revision ? 'Ver la revisión' : 'Revisar mis decisiones'}
+              </button>
+            )}
+          </div>
+        </>
+      }
+      panel={panel}
+      onPanel={setPanel}
+      pestanas={[
+        { id: 'registro', titulo: 'Registro', icono: '≡', contenido: <RegistroJuego v={v} nombre={(a) => NOMBRE_ASIENTO[a]} /> },
+        ...(revision ? [{ id: 'revision', titulo: 'Revisión', icono: '✓', contenido: <ListaRevision revision={revision} /> }] : []),
+      ]}
+    />
   )
 }
 
