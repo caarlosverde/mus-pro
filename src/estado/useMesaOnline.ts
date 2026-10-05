@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { Sena } from '../engine/informacion'
 import type { AccionMano } from '../engine/mano'
 import type { Asiento } from '../engine/partida'
 import type { VistaMesa } from '../engine/sala'
 import { api, urlWebSocket } from './api'
+import { irA } from './ruta'
 
 export type MensajeMesa =
   | { tipo: 'sentarse'; asiento?: Asiento }
@@ -11,6 +13,9 @@ export type MensajeMesa =
   | { tipo: 'accion'; accion: AccionMano }
   | { tipo: 'listo' }
   | { tipo: 'chat'; texto: string }
+  | { tipo: 'sena'; sena: Sena }
+  | { tipo: 'buscarRivales' }
+  | { tipo: 'dejarDeBuscar' }
 
 export type EstadoConexion = 'conectando' | 'conectado' | 'reconectando' | 'error'
 
@@ -42,9 +47,14 @@ export function useMesaOnline(codigo: string) {
           setError(null)
         }
         s.onmessage = (ev) => {
-          const m = JSON.parse(ev.data as string) as { tipo: 'vista'; vista: VistaMesa } | { tipo: 'error'; mensaje: string }
+          const m = JSON.parse(ev.data as string) as { tipo: 'vista'; vista: VistaMesa } | { tipo: 'error'; mensaje: string } | { tipo: 'mover'; codigo: string }
           if (m.tipo === 'vista') setVista(m.vista)
-          else {
+          else if (m.tipo === 'mover') {
+            // Emparejados con otra pareja: nos vamos a su mesa.
+            cerrada = true
+            s.close()
+            irA(`mesa/${m.codigo}`)
+          } else {
             setAviso(m.mensaje)
             setTimeout(() => setAviso(null), 4000)
           }

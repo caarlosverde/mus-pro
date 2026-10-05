@@ -141,3 +141,11 @@
     order: 4;
   }
 }
+
+.elo-sube {
+  color: var(--ok);
+}
+
+.elo-baja {
+  color: var(--danger);
+}

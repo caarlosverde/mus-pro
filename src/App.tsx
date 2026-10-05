@@ -11,13 +11,14 @@ import { Jugar, Online } from './paginas/Online'
 import { Partida } from './paginas/Partida'
 import { Perfil } from './paginas/Perfil'
 import { Problemas } from './paginas/Problemas'
+import { Ranking } from './paginas/Ranking'
 import { ReglasPagina } from './paginas/Reglas'
 import { hayServidor } from './estado/api'
 import { useSesion } from './estado/sesion'
 
 const SECCIONES = [
   { ruta: '', texto: 'Inicio', palo: 'oros', incluye: [] as string[] },
-  { ruta: 'jugar', texto: 'Jugar', palo: 'copas', incluye: ['online', 'mesa'] },
+  { ruta: 'jugar', texto: 'Jugar', palo: 'copas', incluye: ['online', 'mesa', 'ranking'] },
   { ruta: 'entrenar', texto: 'Entrenar', palo: 'espadas', incluye: ['corte', 'problemas'] },
   { ruta: 'laboratorio', texto: 'Laboratorio', palo: 'bastos', incluye: [] },
   { ruta: 'reglas', texto: 'Reglas', palo: null, incluye: [] },
@@ -46,6 +47,9 @@ export default function App() {
       break
     case 'mesa':
       pagina = resto[0] ? <MesaOnline codigo={resto[0].toUpperCase()} /> : <Online />
+      break
+    case 'ranking':
+      pagina = <Ranking />
       break
     case 'cuenta':
       pagina = <Cuenta />

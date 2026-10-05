@@ -9,8 +9,12 @@ import './Perfil.css'
 interface PerfilServidor {
   nombre: string
   creado: number
+  ranking?: {
+    individual: { elo: number; partidas: number; ganadas: number; posicion: number | null }
+    parejas: { elo: number; partidas: number; ganadas: number; companero: string; posicion: number }[]
+  }
   partidas: Partial<Record<'online' | 'bots', { jugadas: number; ganadas: number }>>
-  recientes: { id: string; modo: 'online' | 'bots'; creada: number; gano: boolean; juegos: [number, number]; companeros: string[]; rivales: string[] }[]
+  recientes: { id: string; modo: 'online' | 'bots'; tipo?: string; eloCambio?: number | null; creada: number; gano: boolean; juegos: [number, number]; companeros: string[]; rivales: string[] }[]
   progreso: { corte?: ProgresoCorte; problemas?: ProgresoProblemas; decisiones?: ProgresoDecisiones }
 }
 
@@ -94,7 +98,15 @@ export function Perfil({ nombre }: { nombre?: string }) {
                     ? 'Contra bots'
                     : [r.companeros.length ? `con ${r.companeros.join(', ')}` : 'con un bot', r.rivales.length ? `contra ${r.rivales.join(', ')}` : 'contra bots'].join(' ')}
                 </span>
-                <span className="texto-suave">{new Date(r.creada).toLocaleDateString('es', { day: 'numeric', month: 'short' })}</span>
+                <span className="texto-suave">
+                  {typeof r.eloCambio === 'number' && (
+                    <strong className={r.eloCambio >= 0 ? 'elo-sube' : 'elo-baja'}>
+                      {r.eloCambio >= 0 ? '+' : ''}
+                      {r.eloCambio}{' '}
+                    </strong>
+                  )}
+                  {new Date(r.creada).toLocaleDateString('es', { day: 'numeric', month: 'short' })}
+                </span>
               </li>
             ))}
           </ul>
@@ -120,7 +132,19 @@ function Resumen({
   const bots = datos?.partidas.bots
   const resueltos = Object.values(problemas).filter((v) => v === 'acierto').length
   const totDec = Object.values(decisiones?.dias ?? {}).reduce((acc, [b, m, e]) => [acc[0] + b, acc[1] + b + m + e], [0, 0])
+  const ind = datos?.ranking?.individual
+  const mejorPareja = datos?.ranking?.parejas[0]
   const fichas = [
+    {
+      titulo: 'Puntos individuales',
+      valor: ind?.partidas ? String(ind.elo) : '—',
+      detalle: ind?.partidas ? `Puesto ${ind.posicion} · ${ind.partidas} partidas puntuables` : 'Juega una partida puntuable solo',
+    },
+    {
+      titulo: 'Mejor pareja',
+      valor: mejorPareja ? String(mejorPareja.elo) : '—',
+      detalle: mejorPareja ? `Con ${mejorPareja.companero} · puesto ${mejorPareja.posicion}` : 'Juega puntuable con tu compañero',
+    },
     { titulo: 'Vacas online', valor: online ? `${online.ganadas}/${online.jugadas}` : '—', detalle: online ? `${pct(online.ganadas, online.jugadas)} ganadas` : 'Sin partidas todavía' },
     { titulo: 'Vacas contra bots', valor: bots ? `${bots.ganadas}/${bots.jugadas}` : '—', detalle: bots ? `${pct(bots.ganadas, bots.jugadas)} ganadas` : 'Sin partidas todavía' },
     { titulo: 'Entrenador de corte', valor: corte ? pct(corte.aciertos, corte.intentos) : '—', detalle: corte?.intentos ? `${corte.intentos} manos · mejor racha ${corte.mejorRacha}` : 'Sin entrenar todavía' },

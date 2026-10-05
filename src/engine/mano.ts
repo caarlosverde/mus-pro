@@ -39,6 +39,8 @@ export interface SenaPasada {
   sena: Sena
   /** Rivales que la han pillado. */
   pillada: Posicion[]
+  /** El compañero no estaba mirando y no la vio (señas hechas con el avatar). */
+  noVista?: boolean
 }
 
 export type EventoMano =
@@ -181,7 +183,7 @@ function pasarSenas(e: EstadoMano, rng: Rng): SenaPasada[] {
 
 /** Señas que conoce `pos`: las de su compañero y las que ha pillado a los rivales. */
 export function senasConocidas(e: EstadoMano, pos: Posicion): SenaPasada[] {
-  return e.senas.filter((s) => s.de === companeroDe(pos) || s.pillada.includes(pos))
+  return e.senas.filter((s) => (s.de === companeroDe(pos) && !s.noVista) || s.pillada.includes(pos))
 }
 
 /** Acciones legales del jugador con el turno (para la interfaz). */

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AvisoJuego, ControlesJuego, MarcadorMesa, MesaJuego, RecuentoMano, RegistroJuego, type EtiquetaAsiento } from '../componentes/MesaJuego'
+import { AvisoJuego, ControlesJuego, PanelSenas, MarcadorMesa, MesaJuego, RecuentoMano, RegistroJuego, type EtiquetaAsiento } from '../componentes/MesaJuego'
 import { tituloFase } from '../componentes/mesaTextos'
 import { Etiqueta, Panel } from '../componentes/ui'
 import { crearRng, semillaAleatoria, type Rng } from '../engine/azar'
@@ -12,10 +12,13 @@ import { asientoDe, posicionDe, type Asiento } from '../engine/partida'
 import {
   avanzarSiProcede,
   empezar,
+  hacerSena,
   jugar,
   jugarAutomatico,
   marcarListo,
   nuevaSala,
+  procesarPendientes,
+  proximoPendiente,
   sentar,
   turnoAutomatico,
   vistaPara,
@@ -36,6 +39,8 @@ const YO = { id: 'yo', nombre: 'Tú' }
 interface Configuracion {
   personalidades: Record<1 | 2 | 3, string>
   pasarSenas: boolean
+  /** Señas con avatar: las haces tú y hay que estar atento para ver las de los bots. */
+  avatar: boolean
 }
 
 interface DecisionRegistrada {
@@ -52,6 +57,7 @@ export function Partida() {
   const [config, setConfig] = useState<Configuracion>({
     personalidades: { 1: 'equilibrado', 2: 'equilibrado', 3: 'equilibrado' },
     pasarSenas: true,
+    avatar: false,
   })
   const [sala, setSala] = useState<Sala | null>(null)
 
@@ -69,7 +75,7 @@ function Preparacion({ config, onChange, onEmpezar }: { config: Configuracion; o
 
   const empezarPartida = () => {
     const rng = crearRng(semillaAleatoria())
-    let s = sentar(nuevaSala('LOCAL', reglas, false), YO, HEROE).sala
+    let s = sentar(nuevaSala('LOCAL', reglas, false, { modoSenas: config.avatar ? 'avatar' : 'automaticas' }), YO, HEROE).sala
     const asientos = s.asientos.slice()
     asientos[0] = { ...(asientos[0] as Extract<Sala['asientos'][number], { tipo: 'humano' }>), senasAuto: config.pasarSenas }
     for (const a of [1, 2, 3] as const) asientos[a] = { tipo: 'bot', personalidad: config.personalidades[a] }
@@ -111,6 +117,10 @@ function Preparacion({ config, onChange, onEmpezar }: { config: Configuracion; o
       </div>
       <Panel>
         <label className="casilla">
+          <input id="senas-avatar" type="checkbox" checked={config.avatar} onChange={(e) => onChange({ ...config, avatar: e.target.checked })} />
+          Señas con avatar: las haces tú y los bots las hacen con la cara un instante (hay que estar atento para pillarlas)
+        </label>
+        <label className="casilla" hidden={config.avatar}>
           <input id="pasar-senas" type="checkbox" checked={config.pasarSenas} onChange={(e) => onChange({ ...config, pasarSenas: e.target.checked })} />
           Pasar automáticamente mis señas a mi compañero (los rivales pueden pillarlas)
         </label>
@@ -145,6 +155,14 @@ function MesaLocal({ inicial, onSalir }: { inicial: Sala; onSalir: () => void })
     const t = setTimeout(() => setSala((s) => (turnoAutomatico(s) === automatico ? jugarAutomatico(s, automatico, rng.current) : s)), rapido ? 120 : 650)
     return () => clearTimeout(t)
   }, [sala, automatico, rapido])
+
+  // Gestos de los bots programados (señas con avatar).
+  const proximo = proximoPendiente(sala)
+  useEffect(() => {
+    if (proximo === null) return
+    const t = setTimeout(() => setSala((s) => procesarPendientes(s)), Math.max(0, proximo - Date.now()))
+    return () => clearTimeout(t)
+  }, [proximo])
 
   // Al terminar la vaca, se guarda en el perfil (si hay sesión).
   useEffect(() => {
@@ -216,6 +234,18 @@ function MesaLocal({ inicial, onSalir }: { inicial: Sala; onSalir: () => void })
         <Panel titulo={tituloFase(v)}>
           {m && m.fase !== 'fin' && m.turno === HEROE && <ControlesJuego v={v} onAccion={jugarYo} />}
           {m && m.fase !== 'fin' && m.turno !== HEROE && m.turno !== null && <p className="texto-suave">Habla {NOMBRE_ASIENTO[m.turno].toLowerCase()}…</p>}
+          <PanelSenas
+            v={v}
+            onSena={(sena) =>
+              setSala((s) => {
+                try {
+                  return hacerSena(s, HEROE, sena, rng.current)
+                } catch {
+                  return s // seña fuera de tiempo: se ignora
+                }
+              })
+            }
+          />
           {m?.fase === 'fin' && (
             <div className="fin-mano">
               <AvisoJuego v={v} />

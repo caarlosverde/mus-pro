@@ -90,6 +90,10 @@ async function enrutar(req: Request, env: Env): Promise<Response> {
   const perfil = ruta.match(/^\/api\/perfil\/([^/]+)$/)
   if (perfil && m === 'GET') return verPerfil(decodeURIComponent(perfil[1]), env)
 
+  // Ranking
+  if (ruta === '/api/ranking/individual' && m === 'GET') return rankingIndividual(env)
+  if (ruta === '/api/ranking/parejas' && m === 'GET') return rankingParejas(env)
+
   // Mesas
   if (ruta === '/api/mesas' && m === 'POST') return crearMesa(req, env)
   if (ruta === '/api/buscar' && m === 'POST') return buscarPartida(req, env)
@@ -307,8 +311,21 @@ async function partidaContraBots(req: Request, env: Env) {
 }
 
 async function verPerfil(nombre: string, env: Env) {
-  const u = await env.DB.prepare('SELECT id, nombre, creado FROM usuarios WHERE nombre_min = ?').bind(nombre.toLowerCase()).first<Usuario>()
+  const u = await env.DB.prepare('SELECT id, nombre, creado, elo, partidas_elo, ganadas_elo FROM usuarios WHERE nombre_min = ?')
+    .bind(nombre.toLowerCase())
+    .first<Usuario & { elo: number; partidas_elo: number; ganadas_elo: number }>()
   if (!u) throw new ErrorApi(404, 'No existe ese usuario')
+  const posicion = u.partidas_elo
+    ? ((await env.DB.prepare('SELECT COUNT(*) AS n FROM usuarios WHERE partidas_elo > 0 AND elo > ?').bind(u.elo).first<{ n: number }>())?.n ?? 0) + 1
+    : null
+  const parejas = await env.DB.prepare(
+    `SELECT p.elo, p.partidas, p.ganadas, o.nombre AS companero,
+       (SELECT COUNT(*) FROM parejas x WHERE x.elo > p.elo) + 1 AS posicion
+     FROM parejas p JOIN usuarios o ON o.id = CASE WHEN p.usuario_a = ? THEN p.usuario_b ELSE p.usuario_a END
+     WHERE p.usuario_a = ? OR p.usuario_b = ? ORDER BY p.elo DESC LIMIT 5`,
+  )
+    .bind(u.id, u.id, u.id)
+    .all<{ elo: number; partidas: number; ganadas: number; companero: string; posicion: number }>()
   const totales = await env.DB.prepare(
     `SELECT p.modo, COUNT(*) AS jugadas, SUM(pj.gano) AS ganadas
      FROM partida_jugadores pj JOIN partidas p ON p.id = pj.partida_id
@@ -317,24 +334,30 @@ async function verPerfil(nombre: string, env: Env) {
     .bind(u.id)
     .all<{ modo: string; jugadas: number; ganadas: number }>()
   const recientes = await env.DB.prepare(
-    `SELECT p.id, p.modo, p.creada, p.juegos_0, p.juegos_1, pj.equipo, pj.gano,
+    `SELECT p.id, p.modo, p.tipo, p.creada, p.juegos_0, p.juegos_1, pj.equipo, pj.gano, pj.elo_cambio,
        (SELECT group_concat(o.nombre || ':' || o.equipo) FROM partida_jugadores o WHERE o.partida_id = p.id AND o.usuario_id <> ?) AS otros
      FROM partida_jugadores pj JOIN partidas p ON p.id = pj.partida_id
      WHERE pj.usuario_id = ? ORDER BY p.creada DESC LIMIT 15`,
   )
     .bind(u.id, u.id)
-    .all<{ id: string; modo: string; creada: number; juegos_0: number; juegos_1: number; equipo: number; gano: number; otros: string | null }>()
+    .all<{ id: string; modo: string; tipo: string; creada: number; juegos_0: number; juegos_1: number; equipo: number; gano: number; elo_cambio: number | null; otros: string | null }>()
   const progreso = await env.DB.prepare('SELECT clave, valor FROM progreso WHERE usuario_id = ?').bind(u.id).all<{ clave: string; valor: string }>()
 
   return Response.json({
     nombre: u.nombre,
     creado: u.creado,
+    ranking: {
+      individual: { elo: u.elo, partidas: u.partidas_elo, ganadas: u.ganadas_elo, posicion },
+      parejas: parejas.results,
+    },
     partidas: Object.fromEntries(totales.results.map((t) => [t.modo, { jugadas: t.jugadas, ganadas: t.ganadas ?? 0 }])),
     recientes: recientes.results.map((r) => {
       const otros = (r.otros ?? '').split(',').filter(Boolean).map((x) => x.split(':'))
       return {
         id: r.id,
         modo: r.modo,
+        tipo: r.tipo,
+        eloCambio: r.elo_cambio,
         creada: r.creada,
         gano: r.gano === 1,
         juegos: r.equipo === 0 ? [r.juegos_0, r.juegos_1] : [r.juegos_1, r.juegos_0],
@@ -344,6 +367,26 @@ async function verPerfil(nombre: string, env: Env) {
     }),
     progreso: Object.fromEntries(progreso.results.map((p) => [p.clave, JSON.parse(p.valor)])),
   })
+}
+
+// ---------------------------------------------------------------------------
+// Ranking
+// ---------------------------------------------------------------------------
+
+async function rankingIndividual(env: Env) {
+  const { results } = await env.DB.prepare(
+    'SELECT nombre, elo, partidas_elo AS partidas, ganadas_elo AS ganadas FROM usuarios WHERE partidas_elo > 0 ORDER BY elo DESC, partidas_elo DESC LIMIT 100',
+  ).all<{ nombre: string; elo: number; partidas: number; ganadas: number }>()
+  return Response.json({ ranking: results.map((r, i) => ({ posicion: i + 1, ...r })) })
+}
+
+async function rankingParejas(env: Env) {
+  const { results } = await env.DB.prepare(
+    `SELECT a.nombre AS jugador1, b.nombre AS jugador2, p.elo, p.partidas, p.ganadas
+     FROM parejas p JOIN usuarios a ON a.id = p.usuario_a JOIN usuarios b ON b.id = p.usuario_b
+     WHERE p.partidas > 0 ORDER BY p.elo DESC, p.partidas DESC LIMIT 100`,
+  ).all<{ jugador1: string; jugador2: string; elo: number; partidas: number; ganadas: number }>()
+  return Response.json({ ranking: results.map((r, i) => ({ posicion: i + 1, ...r })) })
 }
 
 // ---------------------------------------------------------------------------
@@ -367,7 +410,7 @@ async function crearMesa(req: Request, env: Env) {
     const codigo = codigoMesa()
     const estado = (await (await mesa(env, codigo).fetch('https://mesa/estado')).json()) as { existe: boolean }
     if (estado.existe) continue
-    await mesa(env, codigo).fetch('https://mesa/iniciar', { method: 'POST', body: JSON.stringify({ codigo, publica: false, reglas }) })
+    await mesa(env, codigo).fetch('https://mesa/iniciar', { method: 'POST', body: JSON.stringify({ codigo, publica: false, reglas, modo: 'amistosa' }) })
     return Response.json({ codigo }, { status: 201 })
   }
   throw new ErrorApi(503, 'No se pudo crear la mesa; vuelve a intentarlo')

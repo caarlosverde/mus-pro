@@ -1,0 +1,15 @@
+.avatar {
+  flex: none;
+  display: block;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.avatar__ropa--nos {
+  fill: #2f7d55;
+}
+
+.avatar__ropa--ellos {
+  fill: #b5623a;
+}

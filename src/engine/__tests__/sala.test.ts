@@ -16,6 +16,13 @@ import {
   turnoAutomatico,
   vistaPara,
   ESPERA_DESCONECTADO_MS,
+  buscarRivales,
+  hacerSena,
+  normalizarSala,
+  procesarPendientes,
+  proximoPendiente,
+  reservar,
+  senasPermitidas,
   type Sala,
 } from '../sala'
 
@@ -101,5 +108,75 @@ describe('sala', () => {
     const r = sentar(s, ana)
     expect(r.asiento).toBe(0)
     expect(r.sala.asientos[0]).toMatchObject({ conectado: true })
+  })
+})
+
+describe('señas con avatar', () => {
+  function salaAvatar(semilla = 11) {
+    const rng = crearRng(semilla)
+    let s = nuevaSala('SENAS', REGLAS_POR_DEFECTO, false, { modoSenas: 'avatar' })
+    s = sentar(s, ana).sala
+    s = sentar(s, luis).sala
+    return { s: empezar(s, rng, 'equilibrado', 1000), rng }
+  }
+
+  it('sólo deja hacer señas que la mano permite', () => {
+    const { s, rng } = salaAvatar()
+    const permitidas = senasPermitidas(s, 0)
+    const todas = ['dosReyes', 'tresReyes', 'dosPitos', 'tresPitos', 'medias', 'duples', 'pares', 'la31', 'juego', 'treinta', 'ciego'] as const
+    const falsa = todas.find((x) => !permitidas.includes(x))!
+    expect(() => hacerSena(s, 0, falsa, rng)).toThrow(ErrorSala)
+    const buena = permitidas[0]
+    const s2 = hacerSena(s, 0, buena, rng, 2000)
+    expect(s2.gestos.at(-1)).toMatchObject({ asiento: 0, sena: buena })
+    // La seña queda registrada para los bots (que la ven con cierta probabilidad).
+    expect(s2.partida!.mano.senas.some((x) => x.sena === buena && x.de === posicionDe(s2.partida!, 0))).toBe(true)
+  })
+
+  it('las señas de los bots se programan como gestos y no se dan por escrito', () => {
+    const { s } = salaAvatar(3)
+    const v = vistaPara(s, 0)
+    expect(v.mano!.senas.every((x) => x.como === 'propia')).toBe(true)
+    if (s.pendientes.length === 0) return // ningún bot tenía nada que señar
+    expect(s.pendientes.every((x) => s.asientos[x.asiento]?.tipo === 'bot')).toBe(true)
+    const mas = procesarPendientes(s, 1000 + 60_000)
+    expect(mas.pendientes).toHaveLength(0)
+    expect(mas.gestos.length).toBeGreaterThan(0)
+    expect(proximoPendiente(mas)).toBeNull()
+  })
+})
+
+describe('parejas que buscan rivales', () => {
+  it('sólo una pareja sentada en norte y sur puede buscar; las reservas guardan el sitio', () => {
+    let s = nuevaSala('PAREJ', REGLAS_POR_DEFECTO, false)
+    s = sentar(s, ana).sala
+    expect(() => buscarRivales(s)).toThrow(ErrorSala)
+    s = sentar(s, luis).sala
+    s = buscarRivales(s, 5)
+    expect(s.modo).toBe('parejas')
+    s = reservar(s, [
+      { id: 'u3', asiento: 1 },
+      { id: 'u4', asiento: 3 },
+    ])
+    // Un intruso no puede ocupar un asiento reservado.
+    expect(sentar(s, { id: 'u9', nombre: 'intruso' }).asiento).toBeNull()
+    s = sentar(s, { id: 'u4', nombre: 'eva' }).sala
+    expect(s.asientos[3]).toMatchObject({ nombre: 'eva' })
+  })
+})
+
+describe('compatibilidad con mesas guardadas antes', () => {
+  it('normalizarSala completa los campos que faltan', () => {
+    const vieja = { ...nuevaSala('VIEJA', REGLAS_POR_DEFECTO, true) } as Partial<Sala>
+    delete vieja.gestos
+    delete vieja.pendientes
+    delete vieja.reservas
+    delete vieja.modo
+    const s = normalizarSala(vieja as Sala)
+    expect(s.gestos).toEqual([])
+    expect(s.pendientes).toEqual([])
+    expect(s.reservas).toEqual([])
+    expect(s.modo).toBe('amistosa')
+    expect(procesarPendientes(s, 1)).toBe(s)
   })
 })

@@ -1,0 +1,33 @@
+.ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ranking__tabla {
+  overflow-x: auto;
+}
+
+.ranking .tabla .izq {
+  text-align: left;
+}
+
+.ranking .col-pos {
+  width: 3rem;
+  text-align: center;
+}
+
+.ranking .fila--mia th,
+.ranking .fila--mia td {
+  background: var(--accent-soft);
+}
+
+.ranking .tabla a {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ranking .tabla a:hover {
+  text-decoration: underline;
+}

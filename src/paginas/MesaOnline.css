@@ -144,3 +144,90 @@
   font-size: 0.75rem;
   opacity: 0.8;
 }
+
+.opciones-espera {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.opcion-espera {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.buscando {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+
+.buscando > div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 180px;
+}
+
+.buscando__punto {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: latido 1.2s ease-in-out infinite;
+  flex: none;
+}
+
+@keyframes latido {
+  0%,
+  100% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buscando__punto {
+    animation: none;
+  }
+}
+
+.cambios-puntos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cambio-mio {
+  font-size: 1.05rem;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cambio-mio--sube {
+  background: var(--ok-soft);
+}
+
+.cambio-mio--baja {
+  background: var(--danger-soft);
+}
+
+.opcion-online {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}

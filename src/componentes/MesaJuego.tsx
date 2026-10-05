@@ -3,11 +3,12 @@ import type { Carta as TCarta } from '../engine/cartas'
 import { describirJugada } from '../engine/entrenadorCorte'
 import type { AccionEnvite } from '../engine/envites'
 import { evaluar } from '../engine/evaluacion'
-import { SENAS } from '../engine/informacion'
+import { SENAS, type Sena } from '../engine/informacion'
 import type { AccionMano } from '../engine/mano'
 import { NOMBRE_LANCE, NOMBRE_POSICION, type Posicion } from '../engine/mesa'
 import type { Asiento } from '../engine/partida'
-import type { EventoVista, VistaMesa } from '../engine/sala'
+import { DURACION_GESTO_MS, type EventoVista, type VistaMesa } from '../engine/sala'
+import { Avatar } from './Avatar'
 import { Carta, CartaOculta } from './Carta'
 import '../paginas/Partida.css'
 
@@ -32,6 +33,7 @@ function posicionEnMano(v: VistaMesa, a: Asiento): Posicion | null {
 export function MesaJuego({ v, etiqueta }: { v: VistaMesa; etiqueta: (a: Asiento) => EtiquetaAsiento }) {
   const m = v.mano
   const fin = m?.fase === 'fin'
+  const gestos = useGestosActivos(v)
 
   const plaza = (a: Asiento, lugar: string) => {
     const pos = posicionEnMano(v, a)
@@ -44,6 +46,14 @@ export function MesaJuego({ v, etiqueta }: { v: VistaMesa; etiqueta: (a: Asiento
     const et = etiqueta(a)
     return (
       <div className={`plaza plaza--${lugar} ${m?.turno === a ? 'plaza--turno' : ''} ${nuestra ? 'plaza--nuestra' : 'plaza--suya'}`}>
+        <div className="plaza__cabeza">
+          <Avatar
+            semilla={j.tipo === 'humano' ? j.nombre : `${j.nombre}-${a}`}
+            nuestro={nuestra}
+            gesto={gestos[a] ?? null}
+            tamano={soyYo ? 52 : 46}
+            etiqueta={`Cara de ${et.nombre}`}
+          />
         <div className="plaza__nombre">
           <strong>
             {et.nombre}
@@ -53,6 +63,7 @@ export function MesaJuego({ v, etiqueta }: { v: VistaMesa; etiqueta: (a: Asiento
             {pos !== null ? NOMBRE_POSICION[pos] : 'Esperando'}
             {et.detalle && ` · ${et.detalle}`}
           </span>
+        </div>
         </div>
         <div className="plaza__dice" aria-live="polite">
           {ultima && <span className="bocadillo">{ultima}</span>}
@@ -348,3 +359,68 @@ export function AvisoJuego({ v }: { v: VistaMesa }) {
   )
 }
 
+
+/**
+ * Gestos que está haciendo cada avatar ahora mismo. Cada gesto nuevo (por id)
+ * se muestra un instante; los que ya estaban al llegar no se repiten.
+ */
+function useGestosActivos(v: VistaMesa): Partial<Record<Asiento, Sena>> {
+  const vistos = useRef<Set<number> | null>(null)
+  const [activos, setActivos] = useState<Partial<Record<Asiento, Sena>>>({})
+  useEffect(() => {
+    if (vistos.current === null) {
+      // Primera vista (o reconexión): no se reproducen gestos antiguos.
+      vistos.current = new Set(v.gestos.map((g) => g.id))
+      return
+    }
+    const nuevos = v.gestos.filter((g) => !vistos.current!.has(g.id))
+    if (nuevos.length === 0) return
+    const temporizadores: ReturnType<typeof setTimeout>[] = []
+    nuevos.forEach((g, i) => {
+      vistos.current!.add(g.id)
+      // Si llegan varios a la vez del mismo jugador, se encadenan.
+      const retraso = nuevos.slice(0, i).filter((x) => x.asiento === g.asiento).length * (DURACION_GESTO_MS + 250)
+      temporizadores.push(setTimeout(() => setActivos((a) => ({ ...a, [g.asiento]: g.sena })), retraso))
+      temporizadores.push(
+        setTimeout(() => setActivos((a) => (a[g.asiento] === g.sena ? { ...a, [g.asiento]: undefined } : a)), retraso + (g.sena === 'ciego' ? 480 : DURACION_GESTO_MS)),
+      )
+    })
+    return () => {
+      // Los gestos ya empezados terminan aunque cambie la vista.
+      void temporizadores
+    }
+  }, [v.gestos])
+  return activos
+}
+
+/** Botones para hacer una seña con el avatar (sólo las que permite tu mano). */
+export function PanelSenas({ v, onSena }: { v: VistaMesa; onSena: (s: Sena) => void }) {
+  const [bloqueado, setBloqueado] = useState(false)
+  if (v.modoSenas !== 'avatar' || v.misSenas.length === 0) return null
+  return (
+    <div className="panel-senas">
+      <div className="panel-senas__cabecera">
+        <strong>Hacer seña</strong>
+        <span className="texto-suave">Dura un instante: tu compañero tiene que estar mirándote… y los rivales también pueden.</span>
+      </div>
+      <div className="chips">
+        {v.misSenas.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className="chip"
+            title={SENAS[s].gesto}
+            disabled={bloqueado}
+            onClick={() => {
+              setBloqueado(true)
+              setTimeout(() => setBloqueado(false), DURACION_GESTO_MS)
+              onSena(s)
+            }}
+          >
+            {SENAS[s].nombre}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
