@@ -287,7 +287,8 @@ function notaDecision(ev: Evaluacion | null, accion: AccionMano): 0 | 1 | 2 | nu
   const mejor = Math.max(...ev.alternativas.map((a) => a.pJuego))
   const mia = ev.alternativas.find((x) => JSON.stringify(x.accion) === JSON.stringify(accion))
   if (!mia) return null
-  const perdida = mejor - mia.pJuego
+  // Lo que no supera el margen de error de la simulación no cuenta como pérdida.
+  const perdida = Math.max(0, mejor - mia.pJuego - mia.margen)
   return perdida < 0.015 ? 0 : perdida < 0.04 ? 1 : 2
 }
 

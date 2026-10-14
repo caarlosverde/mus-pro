@@ -12,9 +12,15 @@ import { evaluarEnSegundoPlano } from '../estado/evaluador'
 import { actualizarProgreso, hoy, useProgreso } from '../estado/progreso'
 import './Problemas.css'
 
-const MUESTRAS = 600
+const MUESTRAS = 900
 /** Diferencia mínima (en probabilidad de ganar el juego) para considerar una opción mejor. */
 const EMPATE = 0.01
+
+/** Mismo resultado salvo ruido: diferencia menor que el umbral o que el margen de error de la simulación. */
+function iguales(ev: Evaluacion): boolean {
+  const [mus, corto] = ev.alternativas
+  return Math.abs(corto.pJuego - mus.pJuego) < Math.max(EMPATE, mus.margen, corto.margen)
+}
 
 type Decision = 'mus' | 'corto'
 
@@ -52,7 +58,7 @@ export function Corte() {
         if (!ev) return
         const [mus, corto] = ev.alternativas
         const diferencia = corto.pJuego - mus.pJuego
-        const acierto = Math.abs(diferencia) < EMPATE || (diferencia > 0) === (d === 'corto')
+        const acierto = iguales(ev) || (diferencia > 0) === (d === 'corto')
         actualizarProgreso('corte', (m) => {
           const racha = acierto ? m.racha + 1 : 0
           const d = hoy()
@@ -144,7 +150,7 @@ function VistaSituacion({
               let clase = ''
               if (elegida && evaluacion && evaluacion !== 'error') {
                 const [mus, corto] = evaluacion.alternativas
-                const mejor = Math.abs(corto.pJuego - mus.pJuego) < EMPATE ? null : corto.pJuego > mus.pJuego ? 'corto' : 'mus'
+                const mejor = iguales(evaluacion) ? null : corto.pJuego > mus.pJuego ? 'corto' : 'mus'
                 clase = mejor === null || mejor === d ? 'opcion--correcta' : d === elegida ? 'opcion--fallida' : 'opcion--apagada'
               } else if (elegida) clase = d === elegida ? '' : 'opcion--apagada'
               return (
@@ -179,7 +185,7 @@ function VistaSituacion({
 function Veredicto({ ev, elegida }: { ev: Evaluacion; elegida: Decision }) {
   const [mus, corto] = ev.alternativas
   const diferencia = corto.pJuego - mus.pJuego
-  const igual = Math.abs(diferencia) < EMPATE
+  const igual = iguales(ev)
   const mejor: Decision = diferencia > 0 ? 'corto' : 'mus'
   const acierto = igual || mejor === elegida
   return (

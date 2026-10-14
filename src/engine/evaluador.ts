@@ -3,8 +3,8 @@ import { BARAJA, type Carta } from './cartas'
 import { PERSONALIDAD_POR_ID, politica, probAccion, type Personalidad } from './bots'
 import { accionesLegales } from './envites'
 import type { InfoJugador } from './informacion'
-import { aplicar, manoDesdeCartas, senasConocidas, type AccionMano, type EstadoMano } from './mano'
-import { POSICIONES, parejaDe, rival, type Posicion } from './mesa'
+import { aplicar, manoDesdeCartas, senasConocidas, senasPosibles, type AccionMano, type EstadoMano, type SenaPasada } from './mano'
+import { POSICIONES, companeroDe, parejaDe, rival, type Posicion } from './mesa'
 import { agenteBot, jugarHastaFin, type Agente } from './partida'
 import { estimarDesdeMarcador } from './problemas'
 import { crearMuestreador, type Escenario } from './simulacion'
@@ -29,6 +29,12 @@ export interface ResultadoAlternativa {
   pJuego: number
   /** Piedras netas medias de la mano (tu pareja menos la rival). */
   piedras: number
+  /**
+   * Margen de error (dos errores estándar) de la diferencia con la mejor
+   * alternativa. Si la diferencia es menor, las dos opciones son
+   * estadísticamente indistinguibles con esta simulación.
+   */
+  margen: number
 }
 
 export interface Evaluacion {
@@ -95,8 +101,8 @@ function reconstruir(
     ...manoDesdeCartas(e.reglas, e.marcador, manos, mazo, e.config),
     ronda: e.ronda,
     conservadas: e.conservadas,
-    senas: e.senas,
   }
+  s = { ...s, senas: senasCoherentes(e, s, heroe, rng) }
   let peso = 1
   for (const { pos, accion } of accionesRonda(e)) {
     if (pos !== heroe) {
@@ -111,6 +117,28 @@ function reconstruir(
   }
   if (s.turno !== e.turno || s.fase !== e.fase) return null
   return { estado: s, peso }
+}
+
+/**
+ * Señas del reparto reconstruido. Las que conoce el héroe (las suyas, las de su
+ * compañero y las que ha pillado) se mantienen: el reparto ya es compatible con
+ * ellas. Las demás no las conoce, así que se generan de nuevo a partir de las
+ * cartas simuladas (copiar las reales filtraría información de las cartas
+ * verdaderas a los bots de la simulación).
+ */
+function senasCoherentes(real: EstadoMano, sim: EstadoMano, heroe: Posicion, rng: Rng): SenaPasada[] {
+  const comp = companeroDe(heroe)
+  const conocidas = real.senas.filter((x) => x.de === heroe || x.de === comp || x.pillada.includes(heroe))
+  const out: SenaPasada[] = conocidas.slice()
+  for (const p of POSICIONES) {
+    if (p === heroe || p === comp) continue
+    // Si el héroe pilló alguna seña de este rival, ya sabemos que las pasó: se respetan esas.
+    if (conocidas.some((x) => x.de === p)) continue
+    if (rng() >= real.config.probSenas[p]) continue
+    const rivales = POSICIONES.filter((r) => parejaDe(r) !== parejaDe(p) && r !== heroe)
+    for (const sena of senasPosibles(sim.jugadas[p])) out.push({ de: p, sena, pillada: rivales.filter(() => rng() < real.config.probPillar) })
+  }
+  return out
 }
 
 function valorFinal(fin: EstadoMano, heroe: Posicion): { pJuego: number; piedras: number } {
@@ -154,6 +182,8 @@ export function evaluarDecision(
   const referencia = PERSONALIDAD_POR_ID.equilibrado
   const agentes: Agente[] = POSICIONES.map((p) => agenteBot(p === heroe ? referencia : cfg.personalidades[p]))
   const acum = opciones.map(() => ({ pJuego: 0, piedras: 0 }))
+  const valores: number[][] = opciones.map(() => [])
+  const pesos: number[] = []
   let sumaPesos = 0
   let sumaPesos2 = 0
 
@@ -170,17 +200,33 @@ export function evaluarDecision(
       const fin = tras.fase === 'fin' ? tras : jugarHastaFin(tras, agentes, r2)
       const v = valorFinal(fin, heroe)
       acum[k].pJuego += rec.peso * v.pJuego
+      valores[k].push(v.pJuego)
       acum[k].piedras += rec.peso * v.piedras
     })
+    pesos.push(rec.peso)
     sumaPesos += rec.peso
     sumaPesos2 += rec.peso * rec.peso
   }
   if (sumaPesos === 0) return null
+
+  // Margen de cada alternativa respecto a la mejor, con diferencias emparejadas
+  // (mismos repartos y semilla): el ruido común se cancela.
+  const medias = acum.map((a) => a.pJuego / sumaPesos)
+  const mejor = medias.indexOf(Math.max(...medias))
+  const efectivas = (sumaPesos * sumaPesos) / sumaPesos2
+  const margenes = opciones.map((_, k) => {
+    if (k === mejor) return 0
+    const d = pesos.map((_, i) => valores[mejor][i] - valores[k][i])
+    const media = d.reduce((acc, x, i) => acc + pesos[i] * x, 0) / sumaPesos
+    const varianza = d.reduce((acc, x, i) => acc + pesos[i] * (x - media) ** 2, 0) / sumaPesos
+    return 2 * Math.sqrt(varianza / Math.max(1, efectivas))
+  })
   return {
     alternativas: opciones.map((accion, k) => ({
       accion,
       pJuego: acum[k].pJuego / sumaPesos,
       piedras: acum[k].piedras / sumaPesos,
+      margen: margenes[k],
     })),
     muestrasEfectivas: (sumaPesos * sumaPesos) / sumaPesos2,
   }
