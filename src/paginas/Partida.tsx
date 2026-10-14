@@ -155,7 +155,7 @@ function MesaLocal({ inicial, onSalir, aprendizaje }: { inicial: Sala; onSalir: 
   // Los bots juegan solos, con una pausa para que se pueda seguir la mano.
   useEffect(() => {
     if (automatico === null) return
-    const t = setTimeout(() => setSala((s) => (turnoAutomatico(s) === automatico ? jugarAutomatico(s, automatico, rng.current) : s)), rapido ? 120 : 650)
+    const t = setTimeout(() => setSala((s) => (turnoAutomatico(s) === automatico ? jugarAutomatico(s, automatico, rng.current) : s)), rapido ? 500 : 1500)
     return () => clearTimeout(t)
   }, [sala, automatico, rapido])
 
