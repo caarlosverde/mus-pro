@@ -137,9 +137,29 @@ function efectiva(p: Personalidad, e: EstadoMano, pos: Posicion): Personalidad {
 // Estimación de fuerza
 // ---------------------------------------------------------------------------
 
-/** Percentil aproximado del compañero en cada lance según sus señas (0.5 si no se sabe nada). */
-function fuerzaCompanero(senas: Sena[], lance: Lance): number {
+/**
+ * Percentil aproximado del compañero en cada lance según sus señas (0.5 si no se sabe nada).
+ * Con `informa`, el compañero pasa todas sus señas y se ven: lo que no ha
+ * señalado también cuenta (sin seña de reyes no lleva dos reyes, etc.).
+ */
+function fuerzaCompanero(senas: Sena[], lance: Lance, informa = false): number {
   const tiene = (s: Sena) => senas.includes(s)
+  if (informa) {
+    switch (lance) {
+      case 'grandes':
+        if (!tiene('tresReyes') && !tiene('dosReyes')) return 0.35
+        break
+      case 'chicas':
+        if (!tiene('tresPitos') && !tiene('dosPitos')) return 0.35
+        break
+      case 'pares':
+        if (!tiene('duples') && !tiene('medias')) return tiene('dosReyes') ? 0.55 : 0.25
+        break
+      case 'punto':
+        if (!tiene('treinta')) return 0.4
+        break
+    }
+  }
   switch (lance) {
     case 'grandes':
       return tiene('tresReyes') ? 0.97 : tiene('dosReyes') || tiene('duples') ? 0.85 : 0.5
@@ -176,10 +196,13 @@ export function probGanarLance(e: EstadoMano, pos: Posicion, lance: Lance): numb
     pYo = rivalesActivos.reduce<number>((acc, r) => acc * ganarA(p, pos < r), 1)
   }
   const companeroJuega = !declara || participa(e.jugadas[comp], lance)
+  const senasComp = e.senas.filter((s) => s.de === comp)
   const senas = senasConocidas(e, pos)
     .filter((s) => s.de === comp)
     .map((s) => s.sena)
-  const q = companeroJuega ? fuerzaCompanero(senas, lance) : 0
+  // Si no hace señas casi nunca, o alguna no se vio, su silencio no dice nada.
+  const informa = e.config.probSenas[comp] >= 0.5 && !senasComp.some((s) => s.noVista) && senas.length > 0
+  const q = companeroJuega ? fuerzaCompanero(senas, lance, informa) : 0
   const pComp = q ** rivalesActivos.length
   return 1 - (1 - pYo) * (1 - pComp)
 }

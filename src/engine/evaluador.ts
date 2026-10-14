@@ -103,7 +103,8 @@ function reconstruir(
     conservadas: e.conservadas,
   }
   s = { ...s, senas: senasCoherentes(e, s, heroe, rng) }
-  let peso = 1
+  let peso = pesoSenasCompanero(e, s, heroe)
+  if (peso === 0) return null
   for (const { pos, accion } of accionesRonda(e)) {
     if (pos !== heroe) {
       peso *= probAccion(politica(s, pos, personalidades[pos]), accion)
@@ -117,6 +118,22 @@ function reconstruir(
   }
   if (s.turno !== e.turno || s.fase !== e.fase) return null
   return { estado: s, peso }
+}
+
+/**
+ * Lo que el compañero NO ha señalado también informa: quien hace señas pasa
+ * todas las que tiene. Si te ha pasado sólo "dos reyes", no lleva medias ni la
+ * 31; si no ha pasado ninguna, lo más probable es que no tenga nada que pasar.
+ * Si alguna seña suya no se vio, no se puede deducir nada de las ausencias.
+ */
+function pesoSenasCompanero(real: EstadoMano, sim: EstadoMano, heroe: Posicion): number {
+  const comp = companeroDe(heroe)
+  const suyas = real.senas.filter((x) => x.de === comp)
+  if (suyas.some((x) => x.noVista)) return 1
+  const posibles = senasPosibles(sim.jugadas[comp])
+  if (suyas.length === 0) return posibles.length === 0 ? 1 : 1 - real.config.probSenas[comp]
+  const vistas = new Set(suyas.map((x) => x.sena))
+  return posibles.length === vistas.size && posibles.every((x) => vistas.has(x)) ? 1 : 0
 }
 
 /**
