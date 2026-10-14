@@ -168,7 +168,7 @@ function VistaSituacion({
         {elegida && evaluacion && evaluacion !== 'error' && (
           <Panel titulo="Claves de la situación">
             <ul className="claves">
-              {clavesCorte(s).map((c, i) => (
+              {clavesCorte(s, veredictoDe(evaluacion)).map((c, i) => (
                 <li key={i}>{c}</li>
               ))}
             </ul>
@@ -180,6 +180,12 @@ function VistaSituacion({
       </div>
     </>
   )
+}
+
+function veredictoDe(ev: Evaluacion) {
+  const [mus, corto] = ev.alternativas
+  const diferencia = corto.pJuego - mus.pJuego
+  return { mejor: iguales(ev) ? null : diferencia > 0 ? ('corto' as const) : ('mus' as const), diferencia }
 }
 
 function Veredicto({ ev, elegida }: { ev: Evaluacion; elegida: Decision }) {

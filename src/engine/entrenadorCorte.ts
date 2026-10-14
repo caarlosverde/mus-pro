@@ -68,7 +68,7 @@ export function describirJugada(j: Jugada): string {
 }
 
 /** Claves de la situación para explicar la decisión (criterios de mesa, no el cálculo). */
-export function clavesCorte(s: SituacionCorte): string[] {
+export function clavesCorte(s: SituacionCorte, veredicto?: { mejor: 'mus' | 'corto' | null; diferencia: number }): string[] {
   const { estado: e, heroe } = s
   const j = e.jugadas[heroe]
   const nos = parejaDe(heroe)
@@ -85,7 +85,7 @@ export function clavesCorte(s: SituacionCorte): string[] {
 
   switch (heroe) {
     case 0:
-      out.push('De mano no tienes prisa: ganas los empates y, si cortan ellos, te queda el revoque. Cortar con jugadas medias hace que no te quieran nada.')
+      out.push('De mano no tienes prisa: ganas todos los empates y hablas el primero en cada lance. Cortar con una jugada mediana avisa a los rivales y no te quieren nada.')
       break
     case 2:
       out.push('Tu compañero, el mano, ha pedido mus. Cortar con una jugada mediana es un "autoquitamano": renuncias a su ventaja de posición.')
@@ -104,6 +104,15 @@ export function clavesCorte(s: SituacionCorte): string[] {
   if (faltanEllos <= 5 && faltanNos > 10) out.push('Ellos están dentro y vosotros lejos: hay que cortar con lo que permita echar órdagos.')
   else if (faltanNos <= 5 && faltanEllos > 10) out.push('Estáis dentro con ventaja: no hace falta arriesgar, basta con no dejarles remontar.')
   else if (faltanNos <= 8 && faltanEllos <= 8) out.push('Final apretado: mandan las grandes y los pares, porque el juego se cobra el último.')
+
+  if (veredicto) {
+    const pts = (Math.abs(veredicto.diferencia) * 100).toFixed(1)
+    out.push(
+      veredicto.mejor === null
+        ? 'En esta mano concreta las dos opciones salen igual: los criterios de arriba se compensan.'
+        : `En esta mano concreta sale mejor ${veredicto.mejor === 'corto' ? 'cortar' : 'pedir mus'} (${pts} puntos de probabilidad de ganar el juego). Los criterios generales orientan, pero el cálculo con tus cartas y las señas manda.`,
+    )
+  }
 
   out.push(`Antes que tú: ${[0, 1, 2, 3]
     .slice(0, heroe)
